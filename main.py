@@ -4,34 +4,32 @@ import gamesprites
 import config
 import time
 import menus
-
+from pomodoro import PomodoroScreen 
 
 
 class Game:
     def __init__(self):
-
-
-        
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
+        self.pomodoro_screen = None
 
         self.init_buttons()
-
-        
-    
         self.entities()
         self.gameloop()
         self.refresh()
-        
 
     def init_buttons(self):
         screen_width = self.screen.get_width()
         self.button = menus.ImageButton("images/shop_icon.png", (screen_width, 0), margin=(20, 20), size=(80, 80))
         self.shop_menu = menus.Shop()
         self.shop_open = False
+
+    def give_pomodoro_reward(self):
+        self.money += 10 
+        print("Pomodoro complete! +10 coins.")
 
 
 
@@ -63,6 +61,27 @@ class Game:
 
         self.menu_bg_sprite = gamesprites.MenuBackground(self.screen.get_size())
 
+        self.quest_menu_state = "main"  # could be "main", "quest1", "quest2", "quest3"
+
+        # Setup quest buttons
+        center_y = 240
+        spacing = 140
+        button_radius = 36
+        screen_w = self.screen.get_width()
+        self.quest_buttons = [
+            gamesprites.QuestButton(
+                (screen_w//2 - spacing, center_y), button_radius, (255, 80, 80),
+                "Pomodoro", image_path="images/tomato.png"
+            ),
+            gamesprites.QuestButton(
+                (screen_w//2, center_y), button_radius, (80, 200, 255),
+                "Mindfulness"
+            ),
+            gamesprites.QuestButton(
+                (screen_w//2 + spacing, center_y), button_radius, (120, 220, 120),
+                "Reading"
+            ),
+        ]
 
         close_radius = 24
         close_margin = 24
@@ -77,10 +96,24 @@ class Game:
         self.screen.blit(self.menu_bg_sprite.image, self.menu_bg_sprite.rect)
         font = pygame.font.SysFont("Arial", 48, bold=True)
         text = font.render("Quests", True, (64, 0, 0))
-        self.screen.blit(
-            text, (self.screen.get_width() // 2 - text.get_width() // 2, 40)
-        )
+        self.screen.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, 40))
         self.screen.blit(self.menu_close_icon.image, self.menu_close_icon.rect)
+
+        if self.quest_menu_state == "main":
+            small_font = pygame.font.SysFont("Arial", 24, bold=True)
+            for idx, btn in enumerate(self.quest_buttons):
+                self.screen.blit(btn.image, btn.rect)
+                txt = small_font.render(btn.text, True, (32, 32, 32))
+                tx = btn.rect.centerx - txt.get_width() // 2
+                ty = btn.rect.bottom + 8
+                self.screen.blit(txt, (tx, ty))
+        else:
+            self.screen.fill((245,245,255))
+            self.screen.blit(self.menu_bg_sprite.image, self.menu_bg_sprite.rect)
+            quest_font = pygame.font.SysFont("Arial", 40, bold=True)
+            quest_text = quest_font.render(f"Quest {self.quest_menu_state[-1]} Screen", True, (120, 40, 40))
+            self.screen.blit(quest_text, (self.screen.get_width()//2 - quest_text.get_width()//2, 200))
+            self.screen.blit(self.menu_close_icon.image, self.menu_close_icon.rect)
 
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):
@@ -189,7 +222,7 @@ class Game:
 
             if hasattr(tree, "time_left"):
                 seconds_left = tree.time_left()
-                if seconds_left > 0:   # <--- Only draw timer if greater than 0
+                if seconds_left > 0:
                     timer_text = font.render(str(seconds_left), True, (0, 120, 0))
                     text_x = tree_rect.centerx - timer_text.get_width() // 2
                     text_y = tree_rect.bottom + 2
@@ -216,82 +249,101 @@ class Game:
         if self.shop_open:
             self.shop_menu.draw(self.screen)
 
-
         pygame.display.flip()
-
-
-
-
-    
-
 
     def gameloop(self):
         while self.running:
             dt = self.clock.tick(60) / 1000
+
+            # POMODORO SCREEN HANDLING
+            if self.quest_menu_state == "pomodoro" and self.pomodoro_screen:
+                pomodoro_running = True
+                while pomodoro_running and self.running:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            self.quit()
+                            return
+                        result = self.pomodoro_screen.handle_event(event)
+                        if result == "exit":
+                            # Return to quest menu on ESC
+                            self.quest_menu_state = "main"
+                            self.menu_open = True
+                            self.pomodoro_screen = None
+                            pomodoro_running = False
+                            break
+
+                    if not pomodoro_running:
+                        break
+                    self.pomodoro_screen.update()
+                    self.pomodoro_screen.draw()
+                    pygame.display.flip()
+                continue  # Skip rest of loop and re-enter main event loop
+
+            # -- Usual event handling below here --
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.quit()
+                # QUEST MENU
                 if self.menu_open:
-                    # Only handle menu-close events
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         self.menu_open = False
+                        self.quest_menu_state = "main"
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.menu_close_icon.is_clicked(event.pos):
                             self.menu_open = False
+                            self.quest_menu_state = "main"
+                        elif self.quest_menu_state == "main":
+                            for idx, btn in enumerate(self.quest_buttons):
+                                if btn.is_clicked(event.pos):
+                                    if idx == 0:  # Pomodoro button
+                                        self.pomodoro_screen = PomodoroScreen(self.screen, self.give_pomodoro_reward)
+                                        self.quest_menu_state = "pomodoro"
+                                        self.menu_open = False
+                                    else:
+                                        self.quest_menu_state = f"quest{idx+1}"
+                # SHOP MENU
+                elif self.shop_open:
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        self.shop_open = False
+                    elif event.type == pygame.MOUSEMOTION:
+                        self.shop_menu.update_hover(event.pos)
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_pos = event.pos
+                        item_idx = self.shop_menu.item_at_pos(mouse_pos)
+                        if item_idx is not None:
+                            self.shop_menu.clicked_index = item_idx
+                            print("purchased one")
+                        else:
+                            menu_x, menu_y = self.shop_menu.menu_screen_pos
+                            menu_rect = pygame.Rect(menu_x, menu_y, self.shop_menu.width, self.shop_menu.height)
+                            if not menu_rect.collidepoint(mouse_pos):
+                                self.shop_open = False
+                # MAIN GAME
                 else:
-                    # Handle game events when menu is not open
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_SPACE:
                             self.plant_tree()
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.menu_icon.is_clicked(event.pos):
                             self.menu_open = True
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1 and self.button.is_clicked(event.pos):
-                        if not self.shop_open:
+                            self.quest_menu_state = "main"
+                        elif self.button.is_clicked(event.pos):
                             self.shop_open = True
-                if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self.shop_open = False
 
-
-
-                if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    idx = self.shop_menu.item_at_pos(event.pos)
-                    if idx is not None:
-                        print(f"Clicked item {idx}!")
-
-                if self.shop_open:
-                    if event.type == pygame.MOUSEMOTION:
-                        self.shop_menu.update_hover(event.pos)
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        idx = self.shop_menu.item_at_pos(event.pos)
-                        if idx is not None:
-                            self.shop_menu.clicked_index = idx
-                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                        self.shop_menu.clicked_index = None
-
+            if self.shop_open:
+                mouse_pos = pygame.mouse.get_pos()
+                self.shop_menu.update_hover(mouse_pos)
 
             keys = pygame.key.get_pressed()
             self.player.update(dt, keys, self.walls)
-
-
-
-
-
-                
-
             for tree in self.trees:
                 tree.update(dt)
-
             self.refresh()
-
-
-
-
-
         pygame.quit()
         sys.exit()
 
-game = Game()
 
+    def quit(self):
+        self.running = False
+
+game = Game()

@@ -1,7 +1,7 @@
 import pygame
 import config
 import time
-
+import pomodoro
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, world_pos):
@@ -243,4 +243,29 @@ class MenuBackground(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.image, screen_size)
         self.rect = self.image.get_rect(topleft=(0, 0))
 
+
+class QuestButton(pygame.sprite.Sprite):
+    def __init__(self, center, radius, color, text, image_path=None):
+        super().__init__()
+        self.radius = radius
+        self.color = color
+        self.text = text
+        self.image_path = image_path
+
+        # If image_path is provided, load the image; else, draw a circle
+        if image_path:
+            image = pygame.image.load(image_path).convert_alpha()
+            image = pygame.transform.smoothscale(image, (radius*2, radius*2))
+            self.image = image
+        else:
+            self.image = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(self.image, color, (radius, radius), radius)
+
+        self.rect = self.image.get_rect(center=center)
+
+    def is_clicked(self, mouse_pos):
+        rel_x = mouse_pos[0] - self.rect.centerx
+        rel_y = mouse_pos[1] - self.rect.centery
+        # If you want circular hitbox:
+        return rel_x ** 2 + rel_y ** 2 <= self.radius ** 2
 
