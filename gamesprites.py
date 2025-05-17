@@ -100,9 +100,8 @@ class Player(pygame.sprite.Sprite):
                 self.frame = (self.frame + 1) % 2
                 self.frame_timer = 0
         else:
-            self.frame = 0  # Idle on first frame
+            self.frame = 0
 
-        # Set image based on direction and frame
         if self.direction == 'right':
             self.image = self.right_sprites[self.frame]
         elif self.direction == 'left':
@@ -215,3 +214,24 @@ class PlantedTree(pygame.sprite.Sprite):
         screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
         return self.image.get_rect(topleft=(screen_x, screen_y))
 
+class Money(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Money.image_surface:
+            Money.image_surface = pygame.image.load("images/coinCurrency.png").convert_alpha()
+            Money.image_surface = pygame.transform.scale(
+                Money.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Money.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))

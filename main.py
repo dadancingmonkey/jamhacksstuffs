@@ -34,6 +34,9 @@ class Game:
             self.player = gamesprites.Player((0, 0))
             self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
 
+        self.money_sprite = gamesprites.Money((0, 0))
+        self.money = 3
+
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):
             for x, tile in enumerate(row):
@@ -96,21 +99,23 @@ class Game:
         screen.blit(highlight_surf, (draw_x, draw_y))
 
     def plant_tree(self):
-        tile_pos = self.get_forward_pos(self.player)
-        new_tree_temp = gamesprites.PlantedTree((tile_pos.x, tile_pos.y))
+        if self.money > 0:
+            self.money -= 1
+            tile_pos = self.get_forward_pos(self.player)
+            new_tree_temp = gamesprites.PlantedTree((tile_pos.x, tile_pos.y))
 
-        for tree in self.trees:
-            if new_tree_temp.rect.colliderect(tree.rect):
-                return 
+            for tree in self.trees:
+                if new_tree_temp.rect.colliderect(tree.rect):
+                    return 
 
-        for wall in self.walls:
-            wall_rect = getattr(wall, 'collision_rect', wall.image.get_rect(topleft=wall.world_pos))
-            if new_tree_temp.collision_rect.colliderect(wall_rect):
-                return
+            for wall in self.walls:
+                wall_rect = getattr(wall, 'collision_rect', wall.image.get_rect(topleft=wall.world_pos))
+                if new_tree_temp.collision_rect.colliderect(wall_rect):
+                    return
 
-        self.trees.add(new_tree_temp)
-        self.walls.add(new_tree_temp)
-        self.all_sprites.add(new_tree_temp, layer=config.TREES_LAYER)
+            self.trees.add(new_tree_temp)
+            self.walls.add(new_tree_temp)
+            self.all_sprites.add(new_tree_temp, layer=config.TREES_LAYER)
 
 
 
@@ -167,6 +172,13 @@ class Game:
         # Draw player at center
         player_rect = self.player.image.get_rect(center=screen_rect.center)
         self.screen.blit(self.player.image, player_rect)
+
+        self.screen.blit(self.money_sprite.image, (16, 16))
+
+        font = pygame.font.SysFont("Arial", 24)
+        money_text = font.render(str(self.money), True, (255, 255, 0))
+        self.screen.blit(money_text, (16 + self.money_sprite.image.get_width() + 8, 16))
+
 
         pygame.display.flip()
 
