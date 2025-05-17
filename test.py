@@ -26,19 +26,9 @@ text_str = 'Breath in...'
 
 
 
-# I - Import and Initialize - Start IDEA
-
-# D - Display configuration
-
 pygame.display.set_caption("Hello, world!")
-# E - Entities (just background for now)
 
 
-
-
-
-# A - Action (broken into ALTER steps)
-# A - Assign values to key variables
 clock = pygame.time.Clock()
 radius = 150
 radius2 = 85
