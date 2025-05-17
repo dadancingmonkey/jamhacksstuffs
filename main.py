@@ -22,6 +22,7 @@ class Game:
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.ground = pygame.sprite.Group()
         self.trees = pygame.sprite.Group()
+        self.walls = pygame.sprite.Group()
         self.player = None  # Will set after scanning tilemap
         self.create_tilemap()
         # Add player sprite after locating P
@@ -31,7 +32,6 @@ class Game:
             # Fallback if no 'P' found
             self.player = gamesprites.Player((0, 0))
             self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
-
 
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):
@@ -48,18 +48,24 @@ class Game:
                     self.all_sprites.add(tree, layer=config.TREES_LAYER)
                 elif tile == 'P':
                     self.player = gamesprites.Player((world_x, world_y))
-                    # Optionally, also treat P as ground:
                     block = gamesprites.Block((world_x, world_y))
                     self.ground.add(block)
                     self.all_sprites.add(block, layer=config.BLOCKS_LAYER)
+                elif tile == 'B':
+                    wall = gamesprites.Wall((world_x, world_y))
+                    self.walls.add(wall)
+                    self.all_sprites.add(wall, layer=config.WALLS_LAYER)
+
+
+
 
 
 
     def refresh(self):
-        self.screen.fill((135, 206, 235)) 
+        self.screen.fill((135, 206, 235))
         screen_rect = self.screen.get_rect()
 
-        # Draw all ground blocks (red tiles)
+        # Draw ground blocks
         for block in self.ground:
             block_rect = block.image.get_rect(
                 topleft=(
@@ -69,11 +75,24 @@ class Game:
             )
             self.screen.blit(block.image, block_rect)
 
-        # Draw all trees
+        # Draw walls
+        for wall in self.walls:
+            wall_rect = wall.image.get_rect(
+                topleft=(
+                    wall.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
+                    wall.world_pos.y - self.player.world_pos.y + screen_rect.centery,
+                )
+            )
+            self.screen.blit(wall.image, wall_rect)
+
+        # Draw trees
         for tree in self.trees:
-            screen_x = tree.world_pos.x - self.player.world_pos.x + screen_rect.centerx
-            screen_y = tree.world_pos.y - self.player.world_pos.y + screen_rect.centery
-            tree_rect = tree.image.get_rect(midbottom=(screen_x, screen_y))
+            tree_rect = tree.image.get_rect(
+                midbottom=(
+                    tree.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
+                    tree.world_pos.y - self.player.world_pos.y + screen_rect.centery,
+                )
+            )
             self.screen.blit(tree.image, tree_rect)
 
         # Draw player at center
@@ -81,6 +100,7 @@ class Game:
         self.screen.blit(self.player.image, player_rect)
 
         pygame.display.flip()
+
 
 
 
@@ -94,9 +114,11 @@ class Game:
                     self.running = False
 
             keys = pygame.key.get_pressed()
-            self.player.update(dt, keys)
+            # Pass self.walls to player.update for collision checks
+            self.player.update(dt, keys, self.walls)
+
             for tree in self.trees:
-                tree.update(dt)  # Trees don't need keys
+                tree.update(dt)
 
             self.refresh()
 
