@@ -28,7 +28,7 @@ class Game:
         self.shop_open = False
 
     def give_pomodoro_reward(self):
-        self.money += 10 
+        self.money += 5
         print("Pomodoro complete! +10 coins.")
 
 
@@ -63,23 +63,23 @@ class Game:
 
         self.quest_menu_state = "main"  # could be "main", "quest1", "quest2", "quest3"
 
-        # Setup quest buttons
+        # Setup quest buttons - use increased spacing!
         center_y = 240
-        spacing = 140
+        spacing = 220  # <<--- More space!
         button_radius = 36
         screen_w = self.screen.get_width()
         self.quest_buttons = [
             gamesprites.QuestButton(
                 (screen_w//2 - spacing, center_y), button_radius, (255, 80, 80),
-                "Pomodoro", image_path="images/tomato.png"
+                "Pomodoro", image_path="images/tomato.png", reward_text="+10 Coins"
             ),
             gamesprites.QuestButton(
-                (screen_w//2, center_y), button_radius, (80, 200, 255),
-                "Mindfulness"
+                (screen_w//2, center_y), button_radius, (80, 200, 255), "Breathing Exercise",
+                reward_text="+2 Coins"
             ),
             gamesprites.QuestButton(
-                (screen_w//2 + spacing, center_y), button_radius, (120, 220, 120),
-                "Reading"
+                (screen_w//2 + spacing, center_y), button_radius, (120, 220, 120), "Journaling",
+                reward_text="+3 Coins"
             ),
         ]
 
@@ -92,28 +92,48 @@ class Game:
         self.menu_close_icon = gamesprites.Quests(close_center, close_radius)
 
     def quests(self):
-        # Draw background image
+        # Draw background image for quest menu
         self.screen.blit(self.menu_bg_sprite.image, self.menu_bg_sprite.rect)
+
+        # Draw the big "Quests" title
         font = pygame.font.SysFont("Arial", 48, bold=True)
         text = font.render("Quests", True, (64, 0, 0))
         self.screen.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, 40))
         self.screen.blit(self.menu_close_icon.image, self.menu_close_icon.rect)
 
         if self.quest_menu_state == "main":
-            small_font = pygame.font.SysFont("Arial", 24, bold=True)
+            main_font = pygame.font.SysFont("Arial", 28, bold=True)
+            reward_font = pygame.font.SysFont("Arial", 20, bold=True)
             for idx, btn in enumerate(self.quest_buttons):
                 self.screen.blit(btn.image, btn.rect)
-                txt = small_font.render(btn.text, True, (32, 32, 32))
+
+                main_gap = 24  # Gap from button image to main text
+                reward_gap = 10  # Gap from main text to reward text
+
+                # Main quest text
+                txt = main_font.render(btn.text, True, (32, 32, 32))
                 tx = btn.rect.centerx - txt.get_width() // 2
-                ty = btn.rect.bottom + 8
+                ty = btn.rect.bottom + main_gap
                 self.screen.blit(txt, (tx, ty))
+
+                # Reward text below
+                if btn.reward_text:
+                    reward_txt = reward_font.render(btn.reward_text, True, (255, 180, 60))
+                    rx = btn.rect.centerx - reward_txt.get_width() // 2
+                    ry = ty + txt.get_height() + reward_gap
+                    self.screen.blit(reward_txt, (rx, ry))
         else:
+            # If not in main, show a placeholder for the quest screen
             self.screen.fill((245,245,255))
             self.screen.blit(self.menu_bg_sprite.image, self.menu_bg_sprite.rect)
             quest_font = pygame.font.SysFont("Arial", 40, bold=True)
             quest_text = quest_font.render(f"Quest {self.quest_menu_state[-1]} Screen", True, (120, 40, 40))
             self.screen.blit(quest_text, (self.screen.get_width()//2 - quest_text.get_width()//2, 200))
             self.screen.blit(self.menu_close_icon.image, self.menu_close_icon.rect)
+
+
+
+
 
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):

@@ -245,14 +245,14 @@ class MenuBackground(pygame.sprite.Sprite):
 
 
 class QuestButton(pygame.sprite.Sprite):
-    def __init__(self, center, radius, color, text, image_path=None):
+    def __init__(self, center, radius, color, text, image_path=None, reward_text=None):
         super().__init__()
         self.radius = radius
         self.color = color
         self.text = text
+        self.reward_text = reward_text
         self.image_path = image_path
 
-        # If image_path is provided, load the image; else, draw a circle
         if image_path:
             image = pygame.image.load(image_path).convert_alpha()
             image = pygame.transform.smoothscale(image, (radius*2, radius*2))
@@ -266,6 +266,5 @@ class QuestButton(pygame.sprite.Sprite):
     def is_clicked(self, mouse_pos):
         rel_x = mouse_pos[0] - self.rect.centerx
         rel_y = mouse_pos[1] - self.rect.centery
-        # If you want circular hitbox:
         return rel_x ** 2 + rel_y ** 2 <= self.radius ** 2
 
