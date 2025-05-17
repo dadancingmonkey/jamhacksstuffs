@@ -4,27 +4,33 @@ import gamesprites
 import config
 import time
 import menus
+from mainmenu import TitleScreen, HelpScreen
 
 
 
 class Game:
+    STATE_MENU = 0
+    STATE_HELP = 1
+    STATE_PLAY = 2
     def __init__(self):
-
-
-        
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
+        self.screen = pygame.display.set_mode((1280, 720))  # Match main menu size!
         pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
+
+        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (1280, 720))
+        self.help_screen = HelpScreen((1280, 720))
+
+        # State
+        self.state = self.STATE_MENU
+
 
         self.init_buttons()
 
         
     
         self.entities()
-        self.gameloop()
-        self.refresh()
         
 
     def init_buttons(self):
@@ -230,68 +236,79 @@ class Game:
             dt = self.clock.tick(60) / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quit()
-                if self.menu_open:
-                    # Only handle menu-close events
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        self.menu_open = False
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if self.menu_close_icon.is_clicked(event.pos):
+                    self.running = False
+                    break
+
+                # -------- TITLE MENU STATE ----------
+                if self.state == self.STATE_MENU:
+                    btn = self.title_screen.handle_event(event)
+                    if btn == 0:     # Help pressed
+                        self.state = self.STATE_HELP
+                    elif btn == 1:   # START pressed
+                        self.state = self.STATE_PLAY
+                    elif btn == 2:   # Exit pressed
+                        self.running = False
+
+                # -------- HELP SCREEN STATE ----------
+                elif self.state == self.STATE_HELP:
+                    if self.help_screen.handle_event(event):
+                        self.state = self.STATE_MENU
+
+                # -------- MAIN GAME STATE ----------
+                elif self.state == self.STATE_PLAY:
+                    # Put all your current in-game event handling here
+                    if self.menu_open:
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             self.menu_open = False
-                else:
-                    # Handle game events when menu is not open
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_SPACE:
-                            self.plant_tree()
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            if self.menu_close_icon.is_clicked(event.pos):
+                                self.menu_open = False
+                    else:
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_SPACE:
+                                self.plant_tree()
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            if self.menu_icon.is_clicked(event.pos):
+                                self.menu_open = True
+
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        if self.menu_icon.is_clicked(event.pos):
-                            self.menu_open = True
+                        if event.button == 1 and self.button.is_clicked(event.pos):
+                            if not self.shop_open:
+                                self.shop_open = True
+                    if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        self.shop_open = False
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1 and self.button.is_clicked(event.pos):
-                        if not self.shop_open:
-                            self.shop_open = True
-                if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self.shop_open = False
-
-
-
-                if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    idx = self.shop_menu.item_at_pos(event.pos)
-                    if idx is not None:
-                        print(f"Clicked item {idx}!")
-
-                if self.shop_open:
-                    if event.type == pygame.MOUSEMOTION:
-                        self.shop_menu.update_hover(event.pos)
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         idx = self.shop_menu.item_at_pos(event.pos)
                         if idx is not None:
-                            self.shop_menu.clicked_index = idx
-                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                        self.shop_menu.clicked_index = None
+                            print(f"Clicked item {idx}!")
 
+                    if self.shop_open:
+                        if event.type == pygame.MOUSEMOTION:
+                            self.shop_menu.update_hover(event.pos)
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            idx = self.shop_menu.item_at_pos(event.pos)
+                            if idx is not None:
+                                self.shop_menu.clicked_index = idx
+                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            self.shop_menu.clicked_index = None
 
-            keys = pygame.key.get_pressed()
-            self.player.update(dt, keys, self.walls)
+            # -------- DRAW LOGIC ---------
+            if self.state == self.STATE_MENU:
+                self.title_screen.draw(self.screen)
+            elif self.state == self.STATE_HELP:
+                self.help_screen.draw(self.screen)
+            elif self.state == self.STATE_PLAY:
+                keys = pygame.key.get_pressed()
+                self.player.update(dt, keys, self.walls)
+                for tree in self.trees:
+                    tree.update(dt)
+                self.refresh()
 
-
-
-
-
-                
-
-            for tree in self.trees:
-                tree.update(dt)
-
-            self.refresh()
-
-
-
-
-
+            pygame.display.flip()
         pygame.quit()
         sys.exit()
 
 game = Game()
+game.gameloop()
 
