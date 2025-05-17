@@ -1,32 +1,28 @@
 import pygame
+import math
 
 pygame.init()
 
-screen = pygame.display.set_mode((1000, 1000))
+screen = pygame.display.set_mode((800, 600))
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("RoboticsLogoPNG.png").convert_alpha()
-        self.rect = self.image.get_rect(center=(400, 300))
+current_frame = 0
 
-    def update(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= 5
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += 5
-        if keys[pygame.K_UP]:
-            self.rect.y -= 5
-        if keys[pygame.K_DOWN]:
-            self.rect.y += 5
+next_frame1 = current_frame
 
-player = Player()
-all_sprites = pygame.sprite.Group()
-all_sprites.add(player)
+next_frame2 = current_frame
 
+moving = True
 
+interval = 60
+
+speed_changer = 1
+
+new = 0
+
+font = pygame.font.SysFont('helvetica', 40)
+
+text_str = 'Breath in...'
 
 
 
@@ -36,8 +32,7 @@ all_sprites.add(player)
 
 pygame.display.set_caption("Hello, world!")
 # E - Entities (just background for now)
-background = pygame.image.load('wowza.png')
-background = background.convert()
+
 
 
 
@@ -45,6 +40,8 @@ background = background.convert()
 # A - Action (broken into ALTER steps)
 # A - Assign values to key variables
 clock = pygame.time.Clock()
+radius = 150
+radius2 = 85
 # L - Loop
 keepGoing = True
 while keepGoing:
@@ -57,18 +54,84 @@ while keepGoing:
 
     
 # R - Refresh display
-    screen.blit(background, (0, 0))
+    #screen.fill((255, 87, 51))
+    screen.fill((195, 177, 225))
+
+    if moving:
+        current_frame += 1
+    
+    new += 1
 
     
 
+    
+    image = pygame.draw.circle(screen, (150,111,214), (400,300), radius)
 
-    all_sprites.update()
-    all_sprites.draw(screen)
+    image2 = pygame.draw.circle(screen, (75,56,107), (400,300), radius2)
+
+    text_surface = font.render(text_str, True, (255, 255, 255))
+    text_rect = text_surface.get_rect(center=(400, 300))
+
+    screen.blit(text_surface, text_rect)
 
 
+
+
+
+
+
+    if moving:
+        speed = ((5*math.pi)/(6*speed_changer)) * math.sin((math.pi*current_frame)/(60*speed_changer))
+
+    else:
+        speed = 0
+
+    if moving:
+        speed2 = ((5*math.pi)/(4*speed_changer)) * math.sin((math.pi*current_frame)/(60*speed_changer))
+
+    else:
+        speed2 = 0
+
+
+    
+
+    radius += speed
+
+    radius2 += speed2
+
+
+
+
+    if new == 60:
+        text_str = "Hold..."
+        moving = False
+
+    elif new == 120:
+        text_str = "Breath out..."
+        moving = True
+
+        current_frame = 120
+
+        speed_changer = 2
+
+    elif new == 240:
+
+        text_str = "Hold..."
+
+
+        current_frame = 120
+        moving = False
+        
 
         
 
+    elif new == 300:
+        text_str = "Breath in..."
+        new = 0
+        speed_changer = 1
+        current_frame = 0
+        moving = True
+    
         
 
     
