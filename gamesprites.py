@@ -161,43 +161,61 @@ class Wall(pygame.sprite.Sprite):
         return self.image.get_rect(topleft=(screen_x, screen_y))
     
 
-
 class PlantedTree(pygame.sprite.Sprite):
-    image_surface = None
+    growth_image = None
+    grown_image = None
 
-    def __init__(self, tile_pos, growing_time=60):
+    GROWING_TRUNK = (16, 20) 
+    GROWN_TRUNK   = (40, 56)  
+
+    def __init__(self, tile_pos, growing_time=10):
         super().__init__()
-        if not PlantedTree.image_surface:
-            PlantedTree.image_surface = pygame.image.load("images/tree_green.png").convert_alpha()
-            PlantedTree.image_surface = pygame.transform.scale(
-                PlantedTree.image_surface, (config.TREESIZE, config.TREESIZE)
+        if not PlantedTree.growth_image:
+            PlantedTree.growth_image = pygame.image.load("images/growth_tree_green.png").convert_alpha()
+            PlantedTree.growth_image = pygame.transform.scale(
+                PlantedTree.growth_image, (config.TREESIZE // 2, config.TREESIZE // 2)
             )
-        self.image = PlantedTree.image_surface
+        if not PlantedTree.grown_image:
+            PlantedTree.grown_image = pygame.image.load("images/tree_green.png").convert_alpha()
+            PlantedTree.grown_image = pygame.transform.scale(
+                PlantedTree.grown_image, (config.TREESIZE, config.TREESIZE)
+            )
 
-        # Set position and rect as midbottom of tile
+        self.image = PlantedTree.growth_image
+
         tile_center_x = tile_pos[0] + config.TILESIZE // 2
         image_midbottom_x = tile_center_x
         image_midbottom_y = tile_pos[1] + config.TILESIZE
-        self.rect = self.image.get_rect(midbottom=(image_midbottom_x, image_midbottom_y))
+        self.base_midbottom = (image_midbottom_x, image_midbottom_y)
+
+        self.rect = self.image.get_rect(midbottom=self.base_midbottom)
         self.world_pos = pygame.Vector2(self.rect.topleft)
 
-        # For collision (trunk)
-        trunk_width = 24
-        trunk_height = 32
-        trunk_x = self.rect.left + (config.TREESIZE - trunk_width) // 2
+        self.set_trunk_collision(*PlantedTree.GROWING_TRUNK)
+
+        self.planted_time = time.time()
+        self.grow_duration = growing_time
+        self.grown = False
+
+    def set_trunk_collision(self, trunk_width, trunk_height):
+        # Center trunk at the bottom of the tree image
+        trunk_x = self.rect.left + (self.rect.width - trunk_width) // 2
         trunk_y = self.rect.bottom - trunk_height
         self.collision_rect = pygame.Rect(trunk_x, trunk_y, trunk_width, trunk_height)
-
-        # --- TIMER LOGIC ---
-        self.planted_time = time.time()
-        self.grow_duration = growing_time  # seconds to grow
 
     def time_left(self):
         elapsed = time.time() - self.planted_time
         return max(0, int(self.grow_duration - elapsed))
 
     def update(self, dt):
-        pass
+        if not self.grown and self.time_left() == 0:
+            # --- Switch to fully grown state ---
+            self.image = PlantedTree.grown_image
+            self.rect = self.image.get_rect(midbottom=self.base_midbottom)
+            self.world_pos = pygame.Vector2(self.rect.topleft)
+            self.set_trunk_collision(*PlantedTree.GROWN_TRUNK)
+            self.grown = True
+
 
 class Money(pygame.sprite.Sprite):
     image_surface = None
@@ -228,7 +246,7 @@ class Green(pygame.sprite.Sprite):
     def __init__(self, world_pos):
         super().__init__()
         if not Green.image_surface:
-            Green.image_surface = pygame.image.load("images/tree_pink_seed.png").convert_alpha()
+            Green.image_surface = pygame.image.load("images/tree_green_seed.png").convert_alpha()
             Green.image_surface = pygame.transform.scale(
                 Green.image_surface, (config.TILESIZE, config.TILESIZE)
             )
@@ -244,7 +262,72 @@ class Green(pygame.sprite.Sprite):
         screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
         return self.image.get_rect(topleft=(screen_x, screen_y))
 
+class Pink(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Pink.image_surface:
+            Pink.image_surface = pygame.image.load("images/tree_pink_seed.png").convert_alpha()
+            Pink.image_surface = pygame.transform.scale(
+                Pink.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Pink.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
+
+class Tulip(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Tulip.image_surface:
+            Tulip.image_surface = pygame.image.load("images/tulip_seed.png").convert_alpha()
+            Tulip.image_surface = pygame.transform.scale(
+                Tulip.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Tulip.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
     
+class Lavender(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Lavender.image_surface:
+            Lavender.image_surface = pygame.image.load("images/lavender_seed.png").convert_alpha()
+            Lavender.image_surface = pygame.transform.scale(
+                Lavender.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Lavender.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
+ 
 
 class Quests(pygame.sprite.Sprite):
     def __init__(self, pos, radius=32):

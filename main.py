@@ -62,8 +62,14 @@ class Game:
 
         self.money_sprite = gamesprites.Money((0, 0))
         self.tree_green_seed_sprite = gamesprites.Green((0, 30))
+        self.tree_pink_seed_sprite = gamesprites.Pink((0, 60))
+        self.tulip_sprite = gamesprites.Tulip((0, 90))
+        self.lavender_sprite = gamesprites.Lavender((0, 120))
         self.money = 3
         self.green_seeds = 0
+        self.pink_seeds = 0
+        self.tulip_seeds = 0
+        self.lavender_seeds = 0
         self.tree_duration = 10
         self.menu_open = False
 
@@ -77,11 +83,10 @@ class Game:
 
         self.menu_bg_sprite = gamesprites.MenuBackground(self.screen.get_size())
 
-        self.quest_menu_state = "main"  # could be "main", "quest1", "quest2", "quest3"
+        self.quest_menu_state = "main" 
 
-        # Setup quest buttons - use increased spacing!
         center_y = 240
-        spacing = 220  # <<--- More space!
+        spacing = 220 
         button_radius = 36
         screen_w = self.screen.get_width()
         self.quest_buttons = [
@@ -108,10 +113,8 @@ class Game:
         self.menu_close_icon = gamesprites.Quests(close_center, close_radius)
 
     def quests(self):
-        # Draw background image for quest menu
         self.screen.blit(self.menu_bg_sprite.image, self.menu_bg_sprite.rect)
 
-        # Draw the big "Quests" title
         font = pygame.font.SysFont("Arial", 48, bold=True)
         text = font.render("Quests", True, (64, 0, 0))
         self.screen.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, 40))
@@ -193,7 +196,7 @@ class Game:
 
     def plant_tree(self):
         if self.green_seeds > 0:
-            self.money -= 1
+            self.green_seeds -= 1
             tile_pos = self.get_forward_pos(self.player)
             new_tree_temp = gamesprites.PlantedTree((tile_pos.x, tile_pos.y), self.tree_duration)
 
@@ -284,6 +287,33 @@ class Game:
         green_text = green_font.render(str(self.green_seeds), True, (80, 180, 120))
         self.screen.blit(green_text, (16 + self.tree_green_seed_sprite.image.get_width() + 8, green_icon_y))
 
+        # Draw pink seeds below green seeds
+        pink_icon_y = green_icon_y + self.tree_green_seed_sprite.image.get_height() + 6
+        self.screen.blit(self.tree_pink_seed_sprite.image, (16, pink_icon_y))
+        pink_font = pygame.font.SysFont("Arial", 24)
+        pink_text = pink_font.render(str(self.pink_seeds), True, (220, 100, 180))
+        self.screen.blit(pink_text, (16 + self.tree_pink_seed_sprite.image.get_width() + 8, pink_icon_y))
+
+
+        # Draw tulip seeds below pink seeds
+        tulip_icon_y = pink_icon_y + self.tree_pink_seed_sprite.image.get_height() + 6
+        self.screen.blit(self.tulip_sprite.image, (16, tulip_icon_y))
+        tulip_font = pygame.font.SysFont("Arial", 24)
+        tulip_text = tulip_font.render(str(self.tulip_seeds), True, (220, 170, 60))
+        self.screen.blit(tulip_text, (16 + self.tulip_sprite.image.get_width() + 8, tulip_icon_y))
+
+        # Draw lavender seeds below tulip seeds
+        lavender_icon_y = tulip_icon_y + self.tulip_sprite.image.get_height() + 6
+        self.screen.blit(self.lavender_sprite.image, (16, lavender_icon_y))
+        lavender_font = pygame.font.SysFont("Arial", 24)
+        lavender_text = lavender_font.render(str(self.lavender_seeds), True, (160, 120, 220))
+        self.screen.blit(lavender_text, (16 + self.lavender_sprite.image.get_width() + 8, lavender_icon_y))
+
+
+
+        
+
+
         # Draw the menu (if open)
         if self.menu_open:
             self.quests()
@@ -295,7 +325,7 @@ class Game:
         pygame.display.flip()
 
     def gameloop(self):
-        self.STATE_POMODORO = 3  # Add this state!
+        self.STATE_POMODORO = 3 
         while self.running:
             dt = self.clock.tick(60) / 1000
             for event in pygame.event.get():
@@ -303,34 +333,33 @@ class Game:
                     self.running = False
                     break
 
-                # ---- MAIN MENU STATE ----
+                #MAIN MENU STATE
                 if self.state == self.STATE_MENU:
                     btn = self.title_screen.handle_event(event)
-                    if btn == 0:  # Help
+                    if btn == 0: 
                         self.state = self.STATE_HELP
-                    elif btn == 1:  # Start
+                    elif btn == 1:  
                         self.state = self.STATE_PLAY
-                    elif btn == 2:  # Exit
+                    elif btn == 2:  
                         self.running = False
 
-                # ---- HELP SCREEN STATE ----
+                #HELP SCREEN STATE
                 elif self.state == self.STATE_HELP:
                     if self.help_screen.handle_event(event):
                         self.state = self.STATE_MENU
 
-                # ---- POMODORO STATE ----
+                #POMODORO STATE
                 elif self.state == self.STATE_POMODORO:
-                    # Pass events to your Pomodoro screen
                     if self.pomodoro_screen:
                         result = self.pomodoro_screen.handle_event(event)
                         if result == "exit":
-                            self.state = self.STATE_PLAY  # Or wherever you want to return
+                            self.state = self.STATE_PLAY
                             self.give_pomodoro_reward()
                             self.pomodoro_screen = None
 
-                # ---- GAMEPLAY STATE ----
+                #GAMEPLAY STATE
                 elif self.state == self.STATE_PLAY:
-                    # ----- QUESTS MENU -----
+                    # QUESTS MENU
                     if self.menu_open:
                         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             self.menu_open = False
@@ -338,16 +367,15 @@ class Game:
                             if self.menu_close_icon.is_clicked(event.pos):
                                 self.menu_open = False
 
-                        # ---- Quest Buttons (including Pomodoro) ----
+   
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             for idx, btn in enumerate(self.quest_buttons):
                                 if btn.rect.collidepoint(event.pos):
-                                    if idx == 0:  # Pomodoro quest button
+                                    if idx == 0: 
                                         from pomodoro import PomodoroScreen
                                         self.pomodoro_screen = PomodoroScreen(self.screen, self.give_pomodoro_reward)
                                         self.state = self.STATE_POMODORO
                                         break
-                                    # Handle other quests here
                     else:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_SPACE:
@@ -356,8 +384,7 @@ class Game:
                             if self.menu_icon.is_clicked(event.pos):
                                 self.menu_open = True
 
-
-                    # ---- SHOP BUTTONS ----
+                    #SHOP BUTTONS
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and self.button.is_clicked(event.pos):
                             if not self.shop_open:
@@ -367,20 +394,23 @@ class Game:
                         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             self.shop_open = False
 
-                        # Handle clicking shop items to buy
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             idx = self.shop_menu.item_at_pos(event.pos)
                             if idx is not None:
-                                # Example: idx 0 = normal seed, idx 1 = green seed
                                 if self.money > 0:
                                     self.money -= 1
                                     if idx == 0:
-                                        self.green_seeds += 1   # Or self.seeds if you track normal seeds separately
+                                        self.tulip_seeds += 1
                                         print("Bought 1 seed! -1 coin")
                                     elif idx == 1:
-                                        self.green_seeds += 1   # Or another variable if you want a separate counter
+                                        self.lavender_seeds += 1
                                         print("Bought 1 green seed! -1 coin")
-                                    # You can handle more items here if needed
+                                    elif idx == 2:
+                                        self.green_seeds += 1
+                                        print("Bought 1 green tree seed! -1 coin")
+                                    elif idx == 3:
+                                        self.pink_seeds += 1
+                                        print("Bought 1 pink tree seed! -1 coin")
                                 else:
                                     print("Not enough coins!")
                                 self.shop_menu.clicked_index = idx
@@ -390,7 +420,7 @@ class Game:
                         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                             self.shop_menu.clicked_index = None
 
-
+            #DRAW LOGIC
             if self.state == self.STATE_MENU:
                 self.title_screen.draw(self.screen)
             elif self.state == self.STATE_HELP:
