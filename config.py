@@ -27,6 +27,7 @@ tilemap = [
 
 
 TILESIZE = 32
+PLAYERSIZE = 64
 
 BLOCKS_LAYER = 0
 WALLS_LAYER = 1

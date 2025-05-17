@@ -56,11 +56,6 @@ class Game:
                     self.walls.add(wall)
                     self.all_sprites.add(wall, layer=config.WALLS_LAYER)
 
-
-
-
-
-
     def refresh(self):
         self.screen.fill((135, 206, 235))
         screen_rect = self.screen.get_rect()
