@@ -1,5 +1,6 @@
 import pygame
 import config
+import time
 
 
 class Player(pygame.sprite.Sprite):
@@ -53,7 +54,6 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             dx += 1
 
-        # Normalize diagonal movement
         if dx != 0 or dy != 0:
             length = (dx ** 2 + dy ** 2) ** 0.5
             dx /= length
@@ -63,11 +63,11 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, dx, dy, dt, walls_group):
         original_pos = self.world_pos.copy()
-        # Try X movement
+        #X movement (horizontal or left or right or whatever else you call it)
         self.world_pos.x += dx * self.speed * dt
         if self.collides_with_walls(walls_group):
             self.world_pos.x = original_pos.x
-        # Try Y movement
+        #Y movement (veritical ahhh)
         self.world_pos.y += dy * self.speed * dt
         if self.collides_with_walls(walls_group):
             self.world_pos.y = original_pos.y
@@ -86,14 +86,12 @@ class Player(pygame.sprite.Sprite):
     def animate(self, dx, dy, dt):
         moving = dx != 0 or dy != 0
 
-        # Direction logic: vertical movement takes priority over horizontal
         if moving:
             if abs(dx) > abs(dy):
                 self.direction = 'right' if dx > 0 else 'left'
             elif abs(dy) > 0:
                 self.direction = 'down' if dy > 0 else 'up'
 
-        # Frame timing for animation
         if moving:
             self.frame_timer += dt
             if self.frame_timer >= 0.15:
@@ -114,19 +112,6 @@ class Player(pygame.sprite.Sprite):
     def get_draw_pos(self, screen_rect):
         return self.image.get_rect(center=screen_rect.center)
 
-
-
-
-class Tree(pygame.sprite.Sprite):
-    def __init__(self, world_pos):
-        super().__init__()
-        self.image = pygame.Surface((32, 64))
-        self.image.fill((34, 139, 34))
-        self.rect = self.image.get_rect()
-        self.world_pos = pygame.Vector2(world_pos)
-
-    def update(self, dt):
-        pass
 
 
 
@@ -180,7 +165,7 @@ class Wall(pygame.sprite.Sprite):
 class PlantedTree(pygame.sprite.Sprite):
     image_surface = None
 
-    def __init__(self, tile_pos):
+    def __init__(self, tile_pos, growing_time=60):
         super().__init__()
         if not PlantedTree.image_surface:
             PlantedTree.image_surface = pygame.image.load("images/tree_green.png").convert_alpha()
@@ -189,30 +174,30 @@ class PlantedTree(pygame.sprite.Sprite):
             )
         self.image = PlantedTree.image_surface
 
+        # Set position and rect as midbottom of tile
         tile_center_x = tile_pos[0] + config.TILESIZE // 2
-        tile_center_y = tile_pos[1] + config.TILESIZE // 2
-
         image_midbottom_x = tile_center_x
-        image_midbottom_y = tile_pos[1] + config.TILESIZE 
-
+        image_midbottom_y = tile_pos[1] + config.TILESIZE
         self.rect = self.image.get_rect(midbottom=(image_midbottom_x, image_midbottom_y))
-        self.world_pos = pygame.Vector2(self.rect.topleft) 
+        self.world_pos = pygame.Vector2(self.rect.topleft)
 
+        # For collision (trunk)
         trunk_width = 24
         trunk_height = 32
         trunk_x = self.rect.left + (config.TREESIZE - trunk_width) // 2
         trunk_y = self.rect.bottom - trunk_height
-
         self.collision_rect = pygame.Rect(trunk_x, trunk_y, trunk_width, trunk_height)
 
+        # --- TIMER LOGIC ---
+        self.planted_time = time.time()
+        self.grow_duration = growing_time  # seconds to grow
+
+    def time_left(self):
+        elapsed = time.time() - self.planted_time
+        return max(0, int(self.grow_duration - elapsed))
 
     def update(self, dt):
         pass
-
-    def get_draw_pos(self, player_world_pos, screen_rect):
-        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
-        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
-        return self.image.get_rect(topleft=(screen_x, screen_y))
 
 class Money(pygame.sprite.Sprite):
     image_surface = None
@@ -235,3 +220,27 @@ class Money(pygame.sprite.Sprite):
         screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
         screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
         return self.image.get_rect(topleft=(screen_x, screen_y))
+    
+
+class Quests(pygame.sprite.Sprite):
+    def __init__(self, pos, radius=32):
+        super().__init__()
+        self.radius = radius
+        self.image = pygame.image.load("images/scroll_icon.png").convert_alpha()
+        self.image = pygame.transform.smoothscale(self.image, (radius * 2, radius * 2))
+        self.rect = self.image.get_rect(center=pos)
+
+    def is_clicked(self, mouse_pos):
+        rel_x = mouse_pos[0] - self.rect.centerx
+        rel_y = mouse_pos[1] - self.rect.centery
+        return rel_x ** 2 + rel_y ** 2 <= self.radius ** 2
+    
+
+class MenuBackground(pygame.sprite.Sprite):
+    def __init__(self, screen_size):
+        super().__init__()
+        self.image = pygame.image.load("images/menu_bg.png").convert_alpha()
+        self.image = pygame.transform.smoothscale(self.image, screen_size)
+        self.rect = self.image.get_rect(topleft=(0, 0))
+
+
