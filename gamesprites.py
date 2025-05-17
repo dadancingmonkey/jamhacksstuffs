@@ -222,6 +222,30 @@ class Money(pygame.sprite.Sprite):
         return self.image.get_rect(topleft=(screen_x, screen_y))
     
 
+class Green(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Green.image_surface:
+            Green.image_surface = pygame.image.load("images/tree_pink_seed.png").convert_alpha()
+            Green.image_surface = pygame.transform.scale(
+                Green.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Green.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
+
+    
+
 class Quests(pygame.sprite.Sprite):
     def __init__(self, pos, radius=32):
         super().__init__()

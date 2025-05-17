@@ -105,7 +105,7 @@ class PomodoroScreen:
     def update(self):
         now = time.time()
         # Only move background when timer is running and working
-        self.scroll_speed = 1.5 if self.is_running and not self.is_break else 0
+        self.scroll_speed = 2 if self.is_running and not self.is_break else 0
         self.bg_x -= self.scroll_speed
         if self.bg_x <= -self.bg_width:
             self.bg_x = 0

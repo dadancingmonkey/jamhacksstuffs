@@ -71,6 +71,7 @@ class TitleScreen:
     def __init__(self, bg_image_path, screen_size):
         self.screen_w, self.screen_h = screen_size
         self.bg = pygame.image.load(bg_image_path).convert()
+        self.bg = pygame.transform.scale(self.bg, (self.screen_w, self.screen_h))
         # Buttons: [help, start, close]
         btn_y = self.screen_h//2 + 170
         self.buttons = [

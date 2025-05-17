@@ -16,14 +16,14 @@ class Game:
     STATE_POMODORO = 3
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1280, 720))  # Match main menu size!
+        self.screen = pygame.display.set_mode((800, 600))  # Match main menu size!
         pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
         self.pomodoro_screen = None
 
-        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (1280, 720))
-        self.help_screen = HelpScreen((1280, 720))
+        self.title_screen = TitleScreen("images\main_title_bg.png", (800, 600))
+        self.help_screen = HelpScreen((800, 600))
 
         # State
         self.state = self.STATE_MENU
@@ -61,7 +61,9 @@ class Game:
             self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
 
         self.money_sprite = gamesprites.Money((0, 0))
+        self.tree_green_seed_sprite = gamesprites.Green((0, 30))
         self.money = 3
+        self.green_seeds = 0
         self.tree_duration = 10
         self.menu_open = False
 
@@ -190,7 +192,7 @@ class Game:
         return pygame.Vector2(snapped_x, snapped_y)
 
     def plant_tree(self):
-        if self.money > 0:
+        if self.green_seeds > 0:
             self.money -= 1
             tile_pos = self.get_forward_pos(self.player)
             new_tree_temp = gamesprites.PlantedTree((tile_pos.x, tile_pos.y), self.tree_duration)
@@ -275,6 +277,13 @@ class Game:
         self.screen.blit(money_text, (16 + self.money_sprite.image.get_width() + 8, 16))
         self.screen.blit(self.menu_icon.image, self.menu_icon.rect)
 
+        # Draw green seeds below money
+        green_icon_y = 16 + self.money_sprite.image.get_height() + 6
+        self.screen.blit(self.tree_green_seed_sprite.image, (16, green_icon_y))
+        green_font = pygame.font.SysFont("Arial", 24)
+        green_text = green_font.render(str(self.green_seeds), True, (80, 180, 120))
+        self.screen.blit(green_text, (16 + self.tree_green_seed_sprite.image.get_width() + 8, green_icon_y))
+
         # Draw the menu (if open)
         if self.menu_open:
             self.quests()
@@ -347,29 +356,41 @@ class Game:
                             if self.menu_icon.is_clicked(event.pos):
                                 self.menu_open = True
 
+
                     # ---- SHOP BUTTONS ----
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and self.button.is_clicked(event.pos):
                             if not self.shop_open:
                                 self.shop_open = True
-                    if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        self.shop_open = False
-                    if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        idx = self.shop_menu.item_at_pos(event.pos)
-                        if idx is not None:
-                            print(f"Clicked item {idx}!")
 
                     if self.shop_open:
-                        if event.type == pygame.MOUSEMOTION:
-                            self.shop_menu.update_hover(event.pos)
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                            self.shop_open = False
+
+                        # Handle clicking shop items to buy
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             idx = self.shop_menu.item_at_pos(event.pos)
                             if idx is not None:
+                                # Example: idx 0 = normal seed, idx 1 = green seed
+                                if self.money > 0:
+                                    self.money -= 1
+                                    if idx == 0:
+                                        self.green_seeds += 1   # Or self.seeds if you track normal seeds separately
+                                        print("Bought 1 seed! -1 coin")
+                                    elif idx == 1:
+                                        self.green_seeds += 1   # Or another variable if you want a separate counter
+                                        print("Bought 1 green seed! -1 coin")
+                                    # You can handle more items here if needed
+                                else:
+                                    print("Not enough coins!")
                                 self.shop_menu.clicked_index = idx
+
+                        if event.type == pygame.MOUSEMOTION:
+                            self.shop_menu.update_hover(event.pos)
                         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                             self.shop_menu.clicked_index = None
 
-            # -------- DRAW LOGIC ---------
+
             if self.state == self.STATE_MENU:
                 self.title_screen.draw(self.screen)
             elif self.state == self.STATE_HELP:
