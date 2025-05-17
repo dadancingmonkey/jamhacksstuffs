@@ -10,7 +10,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption("Game Title")
+        pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
 
@@ -55,6 +55,42 @@ class Game:
                     wall = gamesprites.Wall((world_x, world_y))
                     self.walls.add(wall)
                     self.all_sprites.add(wall, layer=config.WALLS_LAYER)
+    
+    def get_tile_in_front(self, player, distance=2):
+        px = int(round(player.world_pos.x // config.TILESIZE))
+        py = int(round(player.world_pos.y // config.TILESIZE))
+        if player.direction == 'up':
+            py -= distance
+        elif player.direction == 'down':
+            py += distance
+        elif player.direction == 'left':
+            px -= distance
+        elif player.direction == 'right':
+            px += distance
+        return px, py
+
+
+
+    def plant_tree(self):
+        px, py = self.get_tile_in_front(self.player)
+        world_x, world_y = px * config.TILESIZE, py * config.TILESIZE
+
+        # Prevent planting on tree or wall
+        for tree in self.trees:
+            tx, ty = int(round(tree.world_pos.x // config.TILESIZE)), int(round(tree.world_pos.y // config.TILESIZE))
+            if (tx, ty) == (px, py):
+                return
+        for wall in self.walls:
+            wx, wy = int(round(wall.world_pos.x // config.TILESIZE)), int(round(wall.world_pos.y // config.TILESIZE))
+            if (wx, wy) == (px, py):
+                return
+
+        # Place the new tree
+        new_tree = gamesprites.PlantedTree((world_x, world_y))
+        self.trees.add(new_tree)
+        self.walls.add(new_tree)  # <-- Add this line!
+        self.all_sprites.add(new_tree, layer=config.TREES_LAYER)
+
 
     def refresh(self):
         self.screen.fill((135, 206, 235))
@@ -72,23 +108,26 @@ class Game:
 
         # Draw walls
         for wall in self.walls:
-            wall_rect = wall.image.get_rect(
-                topleft=(
-                    wall.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
-                    wall.world_pos.y - self.player.world_pos.y + screen_rect.centery,
+            if wall not in self.trees:
+                wall_rect = wall.image.get_rect(
+                    topleft=(
+                        wall.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
+                        wall.world_pos.y - self.player.world_pos.y + screen_rect.centery,
+                    )
                 )
-            )
-            self.screen.blit(wall.image, wall_rect)
+                self.screen.blit(wall.image, wall_rect)
+
 
         # Draw trees
         for tree in self.trees:
             tree_rect = tree.image.get_rect(
-                midbottom=(
+                topleft=(
                     tree.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
                     tree.world_pos.y - self.player.world_pos.y + screen_rect.centery,
                 )
             )
             self.screen.blit(tree.image, tree_rect)
+
 
         # Draw player at center
         player_rect = self.player.image.get_rect(center=screen_rect.center)
@@ -96,20 +135,18 @@ class Game:
 
         pygame.display.flip()
 
-
-
-
-
     def gameloop(self):
         while self.running:
             dt = self.clock.tick(60) / 1000
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    self.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.plant_tree()
 
             keys = pygame.key.get_pressed()
-            # Pass self.walls to player.update for collision checks
             self.player.update(dt, keys, self.walls)
 
             for tree in self.trees:

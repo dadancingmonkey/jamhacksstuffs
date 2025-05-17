@@ -1,8 +1,6 @@
 import pygame
 import config
 
-import pygame
-import config
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, world_pos):
@@ -28,13 +26,12 @@ class Player(pygame.sprite.Sprite):
             pygame.transform.scale(pygame.image.load("images/bunnySprite_front2.PNG").convert_alpha(), (config.PLAYERSIZE/2, config.PLAYERSIZE)),
         ]
         # If up sprites missing, use down_sprites as fallback
-        try:
-            self.up_sprites = [
-                pygame.transform.scale(pygame.image.load("images/bunnySprite_back1.PNG").convert_alpha(), (config.PLAYERSIZE/2, config.PLAYERSIZE)),
-                pygame.transform.scale(pygame.image.load("images/bunnySprite_back2.PNG").convert_alpha(), (config.PLAYERSIZE/2, config.PLAYERSIZE)),
-            ]
-        except:
-            self.up_sprites = self.down_sprites
+        
+        self.up_sprites = [
+            pygame.transform.scale(pygame.image.load("images/bunnySprite_back1.PNG").convert_alpha(), (config.PLAYERSIZE/2, config.PLAYERSIZE)),
+            pygame.transform.scale(pygame.image.load("images/bunnySprite_back2.PNG").convert_alpha(), (config.PLAYERSIZE/2, config.PLAYERSIZE)),
+        ]
+
 
         # Start with facing down, first frame
         self.image = self.down_sprites[0]
@@ -76,13 +73,13 @@ class Player(pygame.sprite.Sprite):
             self.world_pos.y = original_pos.y
 
     def collides_with_walls(self, walls_group):
-        # The player's rect is always centered on their world position
-        player_rect = self.image.get_rect(center=self.world_pos)
+        player_rect = self.image.get_rect(topleft=self.world_pos)
         for wall in walls_group:
             wall_rect = wall.image.get_rect(topleft=wall.world_pos)
             if player_rect.colliderect(wall_rect):
                 return True
         return False
+
 
     def animate(self, dx, dy, dt):
         moving = dx != 0 or dy != 0
@@ -161,7 +158,7 @@ class Wall(pygame.sprite.Sprite):
     def __init__(self, world_pos):
         super().__init__()
         if not Wall.image_surface:
-            Wall.image_surface = pygame.image.load("images/grass_dark_1.png").convert_alpha()
+            Wall.image_surface = pygame.image.load("images/stone.png").convert_alpha()
             Wall.image_surface = pygame.transform.scale(
                 Wall.image_surface, (config.TILESIZE, config.TILESIZE)
             )
@@ -176,3 +173,27 @@ class Wall(pygame.sprite.Sprite):
         screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
         screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
         return self.image.get_rect(topleft=(screen_x, screen_y))
+    
+
+class PlantedTree(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not PlantedTree.image_surface:
+            PlantedTree.image_surface = pygame.image.load("images/tree_green.png").convert_alpha()
+            PlantedTree.image_surface = pygame.transform.scale(
+                PlantedTree.image_surface, (config.TREESIZE, config.TREESIZE)
+            )
+        self.image = PlantedTree.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
+
