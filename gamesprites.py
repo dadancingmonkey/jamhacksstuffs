@@ -1,6 +1,5 @@
 import pygame
-
-import pygame
+import config
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, world_pos):
@@ -50,4 +49,33 @@ class Tree(pygame.sprite.Sprite):
         self.image.fill((34, 139, 34))
         self.rect = self.image.get_rect()
         self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+
+
+class Block(pygame.sprite.Sprite):
+    # Class variable to cache the image and avoid reloading
+    image_surface = None
+
+    def __init__(self, world_pos):
+        super().__init__()
+        if not Block.image_surface:
+            Block.image_surface = pygame.image.load("images\art files\grass_light_1.png").convert_alpha()
+            Block.image_surface = pygame.transform.scale(
+                Block.image_surface, (config.TILESIZE, config.TILESIZE)
+            )
+        self.image = Block.image_surface
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
+
 

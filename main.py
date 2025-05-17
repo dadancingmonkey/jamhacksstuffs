@@ -19,27 +19,58 @@ class Game:
         self.refresh()
 
     def entities(self):
-        # Sprite groups
         self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.ground = pygame.sprite.Group()
         self.trees = pygame.sprite.Group()
+        self.player = None  # Will set after scanning tilemap
+        self.create_tilemap()
+        # Add player sprite after locating P
+        if self.player:
+            self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
+        else:
+            # Fallback if no 'P' found
+            self.player = gamesprites.Player((0, 0))
+            self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
 
-        # Example: Add a player
-        self.player = gamesprites.Player((400, 300))
-        self.all_sprites.add(self.player, layer=2)
 
-        # Example: Add a tree
-        tree = gamesprites.Tree((200, 400))
-        self.trees.add(tree)
-        self.all_sprites.add(tree, layer=1)
+    def create_tilemap(self):
+        for y, row in enumerate(config.tilemap):
+            for x, tile in enumerate(row):
+                world_x = x * config.TILESIZE
+                world_y = y * config.TILESIZE
+                if tile == '.':
+                    block = gamesprites.Block((world_x, world_y))
+                    self.ground.add(block)
+                    self.all_sprites.add(block, layer=config.BLOCKS_LAYER)
+                elif tile == '#':
+                    tree = gamesprites.Tree((world_x, world_y))
+                    self.trees.add(tree)
+                    self.all_sprites.add(tree, layer=config.TREES_LAYER)
+                elif tile == 'P':
+                    self.player = gamesprites.Player((world_x, world_y))
+                    # Optionally, also treat P as ground:
+                    block = gamesprites.Block((world_x, world_y))
+                    self.ground.add(block)
+                    self.all_sprites.add(block, layer=config.BLOCKS_LAYER)
+
+
 
     def refresh(self):
-        self.screen.fill((135, 206, 235))  # Light sky blue background
-
+        self.screen.fill((135, 206, 235)) 
         screen_rect = self.screen.get_rect()
 
-        # Draw all trees at their world positions relative to player
+        # Draw all ground blocks (red tiles)
+        for block in self.ground:
+            block_rect = block.image.get_rect(
+                topleft=(
+                    block.world_pos.x - self.player.world_pos.x + screen_rect.centerx,
+                    block.world_pos.y - self.player.world_pos.y + screen_rect.centery,
+                )
+            )
+            self.screen.blit(block.image, block_rect)
+
+        # Draw all trees
         for tree in self.trees:
-            # Calculate where to draw the tree on the screen
             screen_x = tree.world_pos.x - self.player.world_pos.x + screen_rect.centerx
             screen_y = tree.world_pos.y - self.player.world_pos.y + screen_rect.centery
             tree_rect = tree.image.get_rect(midbottom=(screen_x, screen_y))
@@ -50,6 +81,7 @@ class Game:
         self.screen.blit(self.player.image, player_rect)
 
         pygame.display.flip()
+
 
 
 
