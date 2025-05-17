@@ -113,19 +113,26 @@ class Player(pygame.sprite.Sprite):
         return self.image.get_rect(center=screen_rect.center)
 
 
-
-
 class Block(pygame.sprite.Sprite):
-    image_surface = None
+    image_surfaces = {}
 
-    def __init__(self, world_pos):
+    def __init__(self, world_pos, type):
         super().__init__()
-        if not Block.image_surface:
-            Block.image_surface = pygame.image.load("images/grass_light_1.png").convert_alpha()
-            Block.image_surface = pygame.transform.scale(
-                Block.image_surface, (config.TILESIZE, config.TILESIZE)
-            )
-        self.image = Block.image_surface
+        if type not in Block.image_surfaces:
+            if type == "light1":
+                image = pygame.image.load("images/grass_light_1.png").convert_alpha()
+            elif type == "dark1":
+                image = pygame.image.load("images/grass_dark_1.png").convert_alpha()
+            elif type == "dark2":
+                image = pygame.image.load("images/grass_dark_2.png").convert_alpha()
+            elif type == "light2":
+                image = pygame.image.load("images/grass_light_2.png").convert_alpha()
+            else:
+                image = pygame.Surface((config.TILESIZE, config.TILESIZE))  # Fallback (blank)
+            image = pygame.transform.scale(image, (config.TILESIZE, config.TILESIZE))
+            Block.image_surfaces[type] = image
+
+        self.image = Block.image_surfaces[type]
         self.rect = self.image.get_rect()
         self.world_pos = pygame.Vector2(world_pos)
 
@@ -136,6 +143,7 @@ class Block(pygame.sprite.Sprite):
         screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
         screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
         return self.image.get_rect(topleft=(screen_x, screen_y))
+
 
 
 class Wall(pygame.sprite.Sprite):
@@ -162,43 +170,40 @@ class Wall(pygame.sprite.Sprite):
     
 
 class PlantedTree(pygame.sprite.Sprite):
-    growth_image = None
-    grown_image = None
+    TRUNK_SIZES = {
+        "growing": (16, 20),
+        "grown": (40, 56)
+    }
 
-    GROWING_TRUNK = (16, 20) 
-    GROWN_TRUNK   = (40, 56)  
-
-    def __init__(self, tile_pos, growing_time=10):
+    def __init__(self, tile_pos, growing_time, growth_img_path, grown_img_path, type="tree"):
         super().__init__()
-        if not PlantedTree.growth_image:
-            PlantedTree.growth_image = pygame.image.load("images/growth_tree_green.png").convert_alpha()
-            PlantedTree.growth_image = pygame.transform.scale(
-                PlantedTree.growth_image, (config.TREESIZE // 2, config.TREESIZE // 2)
-            )
-        if not PlantedTree.grown_image:
-            PlantedTree.grown_image = pygame.image.load("images/tree_green.png").convert_alpha()
-            PlantedTree.grown_image = pygame.transform.scale(
-                PlantedTree.grown_image, (config.TREESIZE, config.TREESIZE)
-            )
+        growth_img = pygame.image.load(growth_img_path).convert_alpha()
+        grown_img = pygame.image.load(grown_img_path).convert_alpha()
+        if type == "flower":
+            self.growth_image = pygame.transform.scale(growth_img, (config.TREESIZE // 4, config.TREESIZE // 4))
+            self.grown_image = pygame.transform.scale(grown_img, (config.TREESIZE//3, config.TREESIZE//3))
+        else:
+            self.growth_image = pygame.transform.scale(growth_img, (config.TREESIZE // 2, config.TREESIZE // 2))
+            self.grown_image = pygame.transform.scale(grown_img, (config.TREESIZE, config.TREESIZE))
 
-        self.image = PlantedTree.growth_image
+        self.image = self.growth_image
 
+        # Positioning
         tile_center_x = tile_pos[0] + config.TILESIZE // 2
         image_midbottom_x = tile_center_x
         image_midbottom_y = tile_pos[1] + config.TILESIZE
         self.base_midbottom = (image_midbottom_x, image_midbottom_y)
-
         self.rect = self.image.get_rect(midbottom=self.base_midbottom)
         self.world_pos = pygame.Vector2(self.rect.topleft)
 
-        self.set_trunk_collision(*PlantedTree.GROWING_TRUNK)
+        # Start as "growing"
+        self.set_trunk_collision(*self.TRUNK_SIZES["growing"])
 
         self.planted_time = time.time()
         self.grow_duration = growing_time
         self.grown = False
 
     def set_trunk_collision(self, trunk_width, trunk_height):
-        # Center trunk at the bottom of the tree image
         trunk_x = self.rect.left + (self.rect.width - trunk_width) // 2
         trunk_y = self.rect.bottom - trunk_height
         self.collision_rect = pygame.Rect(trunk_x, trunk_y, trunk_width, trunk_height)
@@ -209,12 +214,13 @@ class PlantedTree(pygame.sprite.Sprite):
 
     def update(self, dt):
         if not self.grown and self.time_left() == 0:
-            # --- Switch to fully grown state ---
-            self.image = PlantedTree.grown_image
+            # Switch to fully grown state
+            self.image = self.grown_image
             self.rect = self.image.get_rect(midbottom=self.base_midbottom)
             self.world_pos = pygame.Vector2(self.rect.topleft)
-            self.set_trunk_collision(*PlantedTree.GROWN_TRUNK)
+            self.set_trunk_collision(*self.TRUNK_SIZES["grown"])
             self.grown = True
+
 
 
 class Money(pygame.sprite.Sprite):
