@@ -13,6 +13,7 @@ class Game:
     STATE_MENU = 0
     STATE_HELP = 1
     STATE_PLAY = 2
+    STATE_POMODORO = 3
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((1280, 720))  # Match main menu size!
@@ -30,8 +31,8 @@ class Game:
 
         self.init_buttons()
         self.entities()
-        self.gameloop()
-        self.refresh()
+
+
         
 
     def init_buttons(self):
@@ -285,63 +286,59 @@ class Game:
         pygame.display.flip()
 
     def gameloop(self):
+        self.STATE_POMODORO = 3  # Add this state!
         while self.running:
             dt = self.clock.tick(60) / 1000
-
-            # POMODORO SCREEN HANDLING
-            if self.quest_menu_state == "pomodoro" and self.pomodoro_screen:
-                pomodoro_running = True
-                while pomodoro_running and self.running:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            self.quit()
-                            return
-                        result = self.pomodoro_screen.handle_event(event)
-                        if result == "exit":
-                            # Return to quest menu on ESC
-                            self.quest_menu_state = "main"
-                            self.menu_open = True
-                            self.pomodoro_screen = None
-                            pomodoro_running = False
-                            break
-
-                    if not pomodoro_running:
-                        break
-                    self.pomodoro_screen.update()
-                    self.pomodoro_screen.draw()
-                    pygame.display.flip()
-                continue  # Skip rest of loop and re-enter main event loop
-
-            # -- Usual event handling below here --
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                     break
 
-                # -------- TITLE MENU STATE ----------
+                # ---- MAIN MENU STATE ----
                 if self.state == self.STATE_MENU:
                     btn = self.title_screen.handle_event(event)
-                    if btn == 0:     # Help pressed
+                    if btn == 0:  # Help
                         self.state = self.STATE_HELP
-                    elif btn == 1:   # START pressed
+                    elif btn == 1:  # Start
                         self.state = self.STATE_PLAY
-                    elif btn == 2:   # Exit pressed
+                    elif btn == 2:  # Exit
                         self.running = False
 
-                # -------- HELP SCREEN STATE ----------
+                # ---- HELP SCREEN STATE ----
                 elif self.state == self.STATE_HELP:
                     if self.help_screen.handle_event(event):
                         self.state = self.STATE_MENU
 
-                # -------- MAIN GAME STATE ----------
+                # ---- POMODORO STATE ----
+                elif self.state == self.STATE_POMODORO:
+                    # Pass events to your Pomodoro screen
+                    if self.pomodoro_screen:
+                        result = self.pomodoro_screen.handle_event(event)
+                        if result == "exit":
+                            self.state = self.STATE_PLAY  # Or wherever you want to return
+                            self.give_pomodoro_reward()
+                            self.pomodoro_screen = None
+
+                # ---- GAMEPLAY STATE ----
                 elif self.state == self.STATE_PLAY:
-                    # Put all your current in-game event handling here
+                    # ----- QUESTS MENU -----
                     if self.menu_open:
                         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             self.menu_open = False
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             if self.menu_close_icon.is_clicked(event.pos):
                                 self.menu_open = False
+
+                        # ---- Quest Buttons (including Pomodoro) ----
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            for idx, btn in enumerate(self.quest_buttons):
+                                if btn.rect.collidepoint(event.pos):
+                                    if idx == 0:  # Pomodoro quest button
+                                        from pomodoro import PomodoroScreen
+                                        self.pomodoro_screen = PomodoroScreen(self.screen, self.give_pomodoro_reward)
+                                        self.state = self.STATE_POMODORO
+                                        break
+                                    # Handle other quests here
                     else:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_SPACE:
@@ -350,13 +347,13 @@ class Game:
                             if self.menu_icon.is_clicked(event.pos):
                                 self.menu_open = True
 
+                    # ---- SHOP BUTTONS ----
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and self.button.is_clicked(event.pos):
                             if not self.shop_open:
                                 self.shop_open = True
                     if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         self.shop_open = False
-
                     if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         idx = self.shop_menu.item_at_pos(event.pos)
                         if idx is not None:
@@ -377,6 +374,9 @@ class Game:
                 self.title_screen.draw(self.screen)
             elif self.state == self.STATE_HELP:
                 self.help_screen.draw(self.screen)
+            elif self.state == self.STATE_POMODORO and self.pomodoro_screen:
+                self.pomodoro_screen.update()
+                self.pomodoro_screen.draw()
             elif self.state == self.STATE_PLAY:
                 keys = pygame.key.get_pressed()
                 self.player.update(dt, keys, self.walls)
@@ -387,6 +387,7 @@ class Game:
             pygame.display.flip()
         pygame.quit()
         sys.exit()
+
 
 game = Game()
 game.gameloop()
