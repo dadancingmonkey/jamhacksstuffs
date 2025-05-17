@@ -8,7 +8,7 @@ class ImageButton:
     def __init__(self, image_path, topright, margin=(0, 0), size = None):
         image = pygame.image.load(image_path).convert_alpha()
         if size is not None:
-            image = pygame.transform.smoothscale(image, size)
+            image = pygame.transform.scale(image, size)
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.topright = (topright[0] - margin[0], topright[1] + margin[1])
