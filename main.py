@@ -3,18 +3,37 @@ import sys
 import gamesprites
 import config
 import time
+import menus
+
+
 
 class Game:
     def __init__(self):
+
+
+        
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
 
+        self.init_buttons()
+
+        
+    
         self.entities()
         self.gameloop()
         self.refresh()
+        
+
+    def init_buttons(self):
+        screen_width = self.screen.get_width()
+        self.button = menus.ImageButton("images/shop_icon.png", (screen_width, 0), margin=(20, 20), size=(80, 80))
+        self.shop_menu = menus.Shop()
+        self.shop_open = False
+
+
 
     def entities(self):
         self.all_sprites = pygame.sprite.LayeredUpdates()
@@ -192,8 +211,19 @@ class Game:
         # Draw the menu (if open)
         if self.menu_open:
             self.quests()
+        self.button.draw(self.screen)
+
+        if self.shop_open:
+            self.shop_menu.draw(self.screen)
+
 
         pygame.display.flip()
+
+
+
+
+    
+
 
     def gameloop(self):
         while self.running:
@@ -217,15 +247,51 @@ class Game:
                         if self.menu_icon.is_clicked(event.pos):
                             self.menu_open = True
 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1 and self.button.is_clicked(event.pos):
+                        if not self.shop_open:
+                            self.shop_open = True
+                if self.shop_open and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.shop_open = False
+
+
+
+                if self.shop_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    idx = self.shop_menu.item_at_pos(event.pos)
+                    if idx is not None:
+                        print(f"Clicked item {idx}!")
+
+                if self.shop_open:
+                    if event.type == pygame.MOUSEMOTION:
+                        self.shop_menu.update_hover(event.pos)
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        idx = self.shop_menu.item_at_pos(event.pos)
+                        if idx is not None:
+                            self.shop_menu.clicked_index = idx
+                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                        self.shop_menu.clicked_index = None
+
+
             keys = pygame.key.get_pressed()
             self.player.update(dt, keys, self.walls)
+
+
+
+
+
+                
 
             for tree in self.trees:
                 tree.update(dt)
 
             self.refresh()
 
+
+
+
+
         pygame.quit()
         sys.exit()
 
 game = Game()
+

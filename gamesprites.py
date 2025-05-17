@@ -121,7 +121,7 @@ class Block(pygame.sprite.Sprite):
     def __init__(self, world_pos):
         super().__init__()
         if not Block.image_surface:
-            Block.image_surface = pygame.image.load("images\grass_light_1.png").convert_alpha()
+            Block.image_surface = pygame.image.load("images/grass_light_1.png").convert_alpha()
             Block.image_surface = pygame.transform.scale(
                 Block.image_surface, (config.TILESIZE, config.TILESIZE)
             )
