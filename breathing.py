@@ -11,10 +11,10 @@ class BreathingScreen:
         self.font = pygame.font.SysFont('helvetica', 40)
 
         pygame.init()
-        pygame.mixer.init()
+        """pygame.mixer.init()
         pygame.mixer.music.load(r"images\breathing.mp3")
         pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(-1)"""
 
         self.current_frame = 0
         self.new = 0

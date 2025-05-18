@@ -5,10 +5,10 @@ class JournalingScreen:
         self.screen = screen
         self.on_exit = on_exit
         pygame.init()
-        pygame.mixer.init()
+        """pygame.mixer.init()
         pygame.mixer.music.load("images\journal.mp3")
         pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(-1)"""
         self.clock = pygame.time.Clock()
         self.base_font = pygame.font.Font(None, 32)
         self.input_rect = pygame.Rect(50, 50, 700, 500)

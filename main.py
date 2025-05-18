@@ -30,7 +30,13 @@ class Game:
         self.pomodoro_screen = None
         self.breathing_screen = None
 
-        self.land_menu = map.LandPurchaseMenu(self.screen.get_size())
+        self.money = 20
+
+        self.land_menu = map.LandPurchaseMenu(
+            self.screen.get_size(),
+            get_money_func=lambda: self.money,
+            spend_money_func=self.spend_money  # <-- use self.spend_money
+        )
 
         self.title_screen = TitleScreen("images/main_title_bg.png", (800, 600))
         self.help_screen = HelpScreen((800, 600))
@@ -59,6 +65,14 @@ class Game:
         self.money += 5
         print("Pomodoro complete! +10 coins.")
 
+    def spend_money(self, amount):
+        print(f"Trying to spend {amount}, current money: {self.money}")  # Debug print
+        if self.money >= amount:
+            self.money -= amount
+            print(f"Purchase successful. New money: {self.money}")  # Debug print
+            return True
+        print("Not enough money!")  # Debug print
+        return False
 
 
     def entities(self):
@@ -79,7 +93,6 @@ class Game:
         self.tree_pink_seed_sprite = gamesprites.Pink((0, 60))
         self.tulip_sprite = gamesprites.Tulip((0, 90))
         self.lavender_sprite = gamesprites.Lavender((0, 120))
-        self.money = 10
         self.green_seeds = 0
         self.pink_seeds = 0
         self.tulip_seeds = 0
@@ -194,7 +207,7 @@ class Game:
                     self.all_sprites.add(water, layer=config.BLOCKS_LAYER)
                     self.walls.add(water)
                 elif tile == '#':
-                    tree = gamesprites.Tree((world_x, world_y))
+                    tree = gamesprites.PlantedTree((world_x, world_y))
                     self.trees.add(tree)
                     self.all_sprites.add(tree, layer=config.TREES_LAYER)
                 elif tile == 'P':

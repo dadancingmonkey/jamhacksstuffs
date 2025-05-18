@@ -44,12 +44,12 @@ def update_tilemap_with_owned_land(owned_tiles, tilemap):
 
     
     for y in range(width):
-        map_rows[((lr*21+1))][(lc*32+y)] = 'B'
-        map_rows[((lr*21+1)+length-1)][(lc*32+y)] = 'B'
+        map_rows[((lr*21+1))][(lc*32+1+y)] = 'B'
+        map_rows[((lr*21+1)+length-1)][(lc*32+1+y)] = 'B'
 
     for x in range(length):
-        map_rows[(lr*21+1+x)][((lc*32)-1)] = 'B'
-        map_rows[(lr*21+1+x)][((lc*32)+width-1)] = 'B'
+        map_rows[(lr*21+1+x)][((lc*32+1)-1)] = 'B'
+        map_rows[(lr*21+1+x)][((lc*32+1)+width-1)] = 'B'
 
     return [''.join(row) for row in map_rows]
 
@@ -82,7 +82,7 @@ class MapIcon:
 
     def was_clicked(self):
         if self.clicked:
-            self.clicked = False  # Reset immediately after use!
+            self.clicked = False
             return True
         return False
 
@@ -101,7 +101,7 @@ class LandPurchaseMenu:
     GRID_PIX = GRID_SIZE * RAW_TILE_SIZE
     GRID_DISPLAY = GRID_PIX * SCALE
 
-    GRID_MENU_MARGIN = 56   # Increased for border padding!
+    GRID_MENU_MARGIN = 56  
     TITLE_MARGIN = 48
     BUTTONS_AREA = 120
     GRID_BUTTON_SPACING = 34
@@ -109,16 +109,15 @@ class LandPurchaseMenu:
     WIDTH = GRID_DISPLAY + 2 * GRID_MENU_MARGIN
     HEIGHT = TITLE_MARGIN + GRID_DISPLAY + 2 * GRID_MENU_MARGIN + BUTTONS_AREA
 
-    # Spiral order and price mapping (in order)
-    # Each step is a tuple: (list_of_tiles, price)
+
     PURCHASE_ORDER = [
-        ([(0,1)], 40),                           # First unlock: Top middle
-        ([(0,2), (1,2)], 50),                    # Second unlock: Top right + middle right
-        ([(2,2), (2,1)], 60),                    # Third unlock: Bottom right + bottom middle
-        ([(0,0), (1,0), (2,0)], 80),             # Fourth unlock: Entire left side
+        ([(0,1)], 40),                        
+        ([(0,2), (1,2)], 50),                  
+        ([(2,2), (2,1)], 60),                  
+        ([(0,0), (1,0), (2,0)], 80),            
     ]
 
-    def __init__(self, screen_size):
+    def __init__(self, screen_size, get_money_func=None, spend_money_func=None):
         self.surface = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.rect = self.surface.get_rect(center=(screen_size[0] // 2, screen_size[1] // 2))
         self.active = False
@@ -136,15 +135,20 @@ class LandPurchaseMenu:
         self.cancel_rect = pygame.Rect(self.WIDTH//2 - btn_w - space//2, y_base, btn_w, btn_h)
         self.done_rect = pygame.Rect(self.WIDTH//2 + space//2, y_base, btn_w, btn_h)
 
+        # Cost functions
+        self.get_money = get_money_func
+        self.spend_money = spend_money_func
+        self.last_purchase_failed = False
+        self.failed_timer = 0
+
 
     def next_spiral_candidates(self):
-        center = (1, 1)  # or whatever your starting plot is
+        center = (1, 1) 
         seen = set(self.owned_tiles)
-        max_ring = self.GRID_SIZE  # or just use a big enough number
+        max_ring = self.GRID_SIZE
         candidates = []
         for ring in range(1, max_ring+1):
             positions = []
-            # Spiral calculation
             for dc in range(-ring+1, ring+1):
                 positions.append((center[0]-ring, center[1]+dc))
             for dr in range(-ring+1, ring+1):
@@ -154,12 +158,10 @@ class LandPurchaseMenu:
             for dr in range(ring-1, -ring-1, -1):
                 positions.append((center[0]+dr, center[1]-ring))
             for pos in positions:
-                # Only allow purchase if adjacent to *any* currently owned tile
                 if pos not in seen and self.is_adjacent_to_owned(pos):
                     candidates.append(pos)
             if candidates:
                 break
-        # Only return plots that are within your world bounds
         return [pos for pos in candidates if self.is_valid_plot(pos)]
     def is_adjacent_to_owned(self, pos):
         r, c = pos
@@ -172,12 +174,6 @@ class LandPurchaseMenu:
     def is_valid_plot(self, pos):
         r, c = pos
         return 0 <= r < self.GRID_SIZE and 0 <= c < self.GRID_SIZE
-
-
-    
-
-
-
 
 
     def get_group_center(self, tiles):
@@ -200,7 +196,6 @@ class LandPurchaseMenu:
         for i, (plots, price) in enumerate(self.PURCHASE_ORDER):
             group_pending = any(p not in purchased for p in plots)
             if group_pending:
-                # Only add a button for this group (the first unowned group)
                 x, y = self.get_group_center(plots)
                 btn_rect = pygame.Rect(x - btn_w//2, y - btn_h//2, btn_w, btn_h)
                 self.buy_buttons[i] = {
@@ -252,6 +247,16 @@ class LandPurchaseMenu:
                     return ("pending", group_idx, btn["plots"])
 
             if self.done_rect.collidepoint((rel_x, rel_y)):
+                # Calculate total cost for pending tiles
+                total_cost = 0
+                for group_idx, btn in self.buy_buttons.items():
+                    if any(plot in self.pending_tiles for plot in btn["plots"]):
+                        total_cost += btn["price"]
+                # Check if player has enough money
+                if self.spend_money is not None and total_cost > 0:
+                    if not self.spend_money(total_cost):
+                        # Not enough money, abort purchase (optionally show a message)
+                        return None
                 self.owned_tiles.update(self.pending_tiles)
                 purchased = list(self.pending_tiles)
                 self.pending_tiles.clear()
@@ -330,7 +335,7 @@ class LandPurchaseMenu:
         if not self.active:
             return
         self.surface.fill((38, 35, 34))
-        pygame.draw.rect(self.surface, (78, 52, 36), self.surface.get_rect(), 10)  # Menu border
+        pygame.draw.rect(self.surface, (78, 52, 36), self.surface.get_rect(), 10) 
 
         font = pygame.font.SysFont("Consolas", 28, bold=True)
         title = font.render("Buy Land", True, (180, 255, 180))
@@ -345,7 +350,6 @@ class LandPurchaseMenu:
         )
         btn_font = pygame.font.SysFont("Consolas", 18, bold=True)
         for group_idx, btn in self.buy_buttons.items():
-            # Draw button background
             color = (66, 110, 255) if not btn["locked"] else (90, 90, 90)
             border = (24, 44, 160) if not btn["locked"] else (48, 48, 60)
             pygame.draw.rect(self.surface, color, btn["rect"])
@@ -362,7 +366,7 @@ class LandPurchaseMenu:
                 lock_rect.center = btn["rect"].center
                 self.draw_lock_icon(self.surface, lock_rect)
 
-        # --- DRAW DONE & CANCEL BUTTONS ---
+        # DRAW DONE & CANCEL BUTTONS
         pygame.draw.rect(self.surface, (44, 160, 64), self.done_rect)
         pygame.draw.rect(self.surface, (28, 80, 32), self.done_rect, 4)
         done_text = btn_font.render("Done", True, (255, 255, 255))
