@@ -232,7 +232,7 @@ class LandPurchaseMenu:
         self.update_buy_buttons()
 
     def handle_event(self, event):
-        
+        print("LandPurchaseMenu.handle_event called, active:", self.active)
         if not self.active:
             return None
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

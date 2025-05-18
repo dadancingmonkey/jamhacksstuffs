@@ -35,7 +35,7 @@ class Game:
         self.land_menu = map.LandPurchaseMenu(
             self.screen.get_size(),
             get_money_func=lambda: self.money,
-            spend_money_func=self.spend_money  # <-- use self.spend_money
+            spend_money_func=self.spend_money
         )
 
         self.title_screen = TitleScreen("images/main_title_bg.png", (800, 600))
@@ -66,12 +66,12 @@ class Game:
         print("Pomodoro complete! +10 coins.")
 
     def spend_money(self, amount):
-        print(f"Trying to spend {amount}, current money: {self.money}")  # Debug print
+        print(f"Trying to spend {amount}, current money: {self.money}") 
         if self.money >= amount:
             self.money -= amount
-            print(f"Purchase successful. New money: {self.money}")  # Debug print
+            print(f"Purchase successful. New money: {self.money}") 
             return True
-        print("Not enough money!")  # Debug print
+        print("Not enough money!") 
         return False
 
 

@@ -9,12 +9,12 @@ class PomodoroScreen:
         self.give_reward_callback = give_reward_callback
 
         pygame.init()
-        """pygame.mixer.init()
+        pygame.mixer.init()
         pygame.mixer.music.load("images\study.mp3")
         pygame.mixer.music.set_volume(0.5) 
         pygame.mixer.music.play(-1)
 
-        self.change_sound = pygame.mixer.Sound("images/change.mp3")   """
+        self.change_sound = pygame.mixer.Sound("images/change.mp3")
 
         self.WIDTH, self.HEIGHT = screen.get_size()
         self.bg = pygame.image.load("images/timer_run.png").convert()
@@ -142,7 +142,7 @@ class PomodoroScreen:
             current_state = "paused"
 
         if current_state != self.previous_state:
-            """self.change_sound.play()"""
+            self.change_sound.play()
             self.previous_state = current_state
         # Animate sprite
         active_sprites = self.working_sprites if self.is_running and not self.is_break else self.break_sprites
