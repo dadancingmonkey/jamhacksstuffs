@@ -6,7 +6,8 @@ def remove(map_rows):
     for x in range (97):
         for y in range(63):
             if map_rows[y][x] != 'P':
-                map_rows[y][x] = '.'
+                if map_rows[y][x] == 'B':
+                    map_rows[y][x] = '.'
 
     
 

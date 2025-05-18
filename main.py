@@ -32,7 +32,7 @@ class Game:
 
         self.land_menu = map.LandPurchaseMenu(self.screen.get_size())
 
-        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (800, 600))
+        self.title_screen = TitleScreen("images/main_title_bg.png", (800, 600))
         self.help_screen = HelpScreen((800, 600))
         self.state = self.STATE_MENU
         self.map_icon = map.MapIcon(self.screen.get_size(), "map icon.png")
