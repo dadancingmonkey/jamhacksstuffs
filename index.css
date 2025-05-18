@@ -1,0 +1,300 @@
+
+
+.mainMenu {
+    position: relative;  
+    width: 25%;
+    text-align: center;
+}
+
+.secondaryMenu {
+    padding: 10px;
+    white-space: nowrap;
+}
+
+.mainMenu:hover .secondaryContainer {
+    display: block;
+}
+#menuBar a:visited {
+    color: #f85acb; /* change this to whatever color you want */
+}
+.secondaryContainer {
+    display: none;
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: #ffffff;
+    width: 100%; 
+    z-index: 1000;
+}
+#background {
+    height: 1000px; 
+    display: absolute;
+}
+
+#menuBar {
+    display: flex; 
+    width: 80%; 
+    justify-content: center;
+    align-items: center;
+    background-color: #814141; 
+    color: rgb(255, 146, 230); 
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    font-size: 20px;
+    font-weight: bold; 
+    border-radius: 4%;
+    font-family: "Pixelify Sans", sans-serif;
+
+    position: fixed; /* Fix it to the top */
+    top: 0;           /* Position at the top */
+    left: 50%;        /* Center it horizontally */
+    transform: translateX(-50%);
+    z-index: 999;     /* Make sure it stays above other elements */
+    padding: 10px 0;  /* Add vertical spacing */    
+    
+}
+
+#background1  {
+    height: 1200px;
+    position: relative; /* 'absolute' is invalid here; this fixes it */
+    padding-top: 70px; /* Add space so content doesn't go under menuBar */
+
+    background-image: linear-gradient(rgba(52,134,52,255), rgba(36,120,36,255));
+
+}
+
+#background1 img {
+    position: absolute;
+    height: 800px; 
+    width: 100%;
+    margin-top: -70px;
+}
+#background1 h1 {
+    font-size: 90px;
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  /* or 700 for bold, depending on what's available */
+    font-style: normal;   
+    text-align: center;
+    width: 100%; 
+    position: absolute;
+    color: white; 
+}
+#background1 h4 {
+    font-family: Tangerine; 
+    font-size: 80px; 
+    text-align: center;
+    width: 100%; 
+    position: absolute;
+    margin-top: 150px; 
+    color:#eeffa4;
+}
+
+#about {
+    margin-left:18%; 
+    position: absolute; 
+    width: 50%; 
+    text-align: center; 
+
+    font-weight: bold;
+    font-size: 18px;
+    border-width: 3px; 
+    border-radius: 11%;
+    border-color: black;
+
+    padding: 40px; 
+    padding-left: 80px; 
+    padding-right: 80px;
+    border-style: solid;
+
+    margin-top: 880px;
+    background-color: rgba(255, 255, 255, 0.5); /* white with 70% opacity */
+
+}
+
+#download {
+
+    color: rgb(143, 40, 146);;  
+    /*padding: 15px 32px;*/
+    text-align: center;
+    display: inline-block;
+    font-size: 70px;
+    /*border-radius: 30%;*/
+    /*border: solid rgb(151, 32, 151) 20px; */
+    width: 50%;
+    height: 20vh;
+    letter-spacing: 6px;
+    margin: 2em auto;
+    box-shadow:   -15px 0 0 0 white,
+                   15px 0 0 0  white,
+                   0 -15px 0 0  white,
+                   0 15px 0 0  white;
+  ; 
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  /* or 700 for bold, depending on what's available */
+    font-style: normal;
+  
+    background-color:  rgba(255, 255, 255, 0.5); 
+    position: absolute; 
+
+    margin-top: 320px; 
+    margin-left: 25%;
+}
+
+
+  
+  /* When scrolled into view */
+  .hidden.show {
+    opacity: 1;
+    transform: translateY(0);
+    animation: fadeDown 3s; 
+
+  }
+  
+#moto {
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;  /* or 700 for bold, depending on what's available */
+    font-style: normal;
+    color: White; 
+    font-size: 40px;
+    position: absolute;
+    margin-top: 600px;
+    direction: right; 
+    width: 100%; 
+
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0%);
+    }
+}
+
+#background2 {
+    height: 600px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+#left, #right {
+    width: 50%;
+    height: 100%;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+#left {
+    animation: fadeLeft 2s ease;
+    background-color: rgba(21, 177, 65, 0.5); /* white with 70% opacity */
+}
+
+#right {
+    animation: fadeRight 2s ease;
+    background-color: rgba(255, 255, 255, 0.5); /* white with 70% opacity */
+
+}
+
+#left h3, #right h4 {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 40px;
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  /* or 700 for bold, depending on what's available */
+    font-style: normal;
+
+
+}
+
+#left p, #right p {
+    font-size: 16px;
+    text-align: left;
+    line-height: 1.6;
+
+}
+#features {
+    background-color:rgba(36, 108, 56, 0.743);
+    height: 500px; 
+}
+
+.slideshow{
+    width: 850px;
+    height: 300px;
+
+    margin: 0 auto; 
+    overflow:hidden; 
+    background-image: linear-gradient(#89d085, #267926);
+    border-radius: 20px;
+    border-style: solid linear-gradient(#89d085, #267926);
+}
+.wrapper {
+    display: flex;
+    animation: slide 30s ease infinite;
+    width: calc(1000px * 6);
+
+}
+
+.slide {
+    width: 850px;
+    height: 300px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+
+}
+@keyframes slide {
+    0% { margin-left: 0; }
+    16.66% { margin-left: 0; }
+    33.33% { margin-left: -1000px; }
+    50% { margin-left: -2000px; }
+    66.66% { margin-left: -3000px; }
+    83.33% { margin-left: -4000px; }
+    100% { margin-left: -5000px; }
+}
+
+#healthImg1 {
+    width: 600px; 
+}
+#features h3 {
+    text-align: center;
+    font-size: 40px;
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  /* or 700 for bold, depending on what's available */
+    font-style: normal;
+}
+
