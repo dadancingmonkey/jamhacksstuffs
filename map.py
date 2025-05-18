@@ -141,6 +141,15 @@ class LandPurchaseMenu:
         self.last_purchase_failed = False
         self.failed_timer = 0
 
+    def spend_money(self, amount):
+        print(f"Trying to spend {amount}, current money: {self.money}")  # Debug print
+        if self.money >= amount:
+            self.money -= amount
+            print(f"Purchase successful. New money: {self.money}")  # Debug print
+            return True
+        print("Not enough money!")  # Debug print
+        return False
+
 
     def next_spiral_candidates(self):
         center = (1, 1) 
@@ -253,10 +262,16 @@ class LandPurchaseMenu:
                     if any(plot in self.pending_tiles for plot in btn["plots"]):
                         total_cost += btn["price"]
                 # Check if player has enough money
-                if self.spend_money is not None and total_cost > 0:
+                if self.spend_money is None:
+                     # Do not allow purchase at all (or show an error)
+                    return None
+
+                if total_cost > 0:
                     if not self.spend_money(total_cost):
+                        print("huh")
                         # Not enough money, abort purchase (optionally show a message)
                         return None
+                
                 self.owned_tiles.update(self.pending_tiles)
                 purchased = list(self.pending_tiles)
                 self.pending_tiles.clear()
