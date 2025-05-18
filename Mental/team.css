@@ -1,0 +1,220 @@
+
+.mainMenu {
+    position: relative;  
+    width: 25%;
+    text-align: center;
+}
+
+.secondaryMenu {
+    padding: 10px;
+    white-space: nowrap;
+}
+
+.mainMenu:hover .secondaryContainer {
+    display: block;
+}
+#menuBar a:visited {
+    color: #f85acb; 
+}
+.secondaryContainer {
+    display: none;
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: #ffffff;
+    width: 100%; 
+    z-index: 1000;
+}
+#background {
+    height: 1000px; 
+    display: absolute;
+}
+
+#menuBar {
+    display: flex; 
+    width: 80%; 
+    justify-content: center;
+    align-items: center;
+    background-color: #814141; 
+    color: rgb(255, 146, 230); 
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    font-size: 20px;
+    font-weight: bold; 
+    border-radius: 4%;
+    font-family: "Pixelify Sans", sans-serif;
+
+    position: fixed; 
+    top: 0;          
+    left: 50%;     
+    transform: translateX(-50%);
+    z-index: 999;     
+    padding: 10px 0;
+    
+}
+
+#background1 {
+    height: 930px;
+    position: relative; 
+    padding-top: 70px; 
+
+}
+#teamDescription h1{
+    font-size: 45px; 
+    border-style: transparent solid; 
+    background-color: rgb(255, 255, 255);
+    text-align: center;
+    width: 100%; 
+    margin-top: 60px;
+    animation: fadeDown 2s; 
+}
+
+#teamDescription p{
+    font-size: 15px; 
+    text-align: center; 
+    animation: fadeDown 2s; 
+
+}
+
+.roles {
+    border-style: transparent solid; 
+    background-color: rgb(125, 59, 171);
+    text-align: center;
+    width: 70%; 
+    margin-left: 15%;
+    margin-bottom: 80px;
+    color: white;
+    padding: 5px; 
+}
+
+.roles p{
+    text-align: center;
+    font-size: 17px; 
+
+}
+
+.roles h3 {
+    font-size: 23px; 
+    text-align: center;
+    font-weight: bold;
+}
+
+#tech h2{
+    font-size: 30px; 
+    text-align: center;
+
+}
+#tech p {
+    text-align: center;
+    font-size:15px; 
+}
+
+
+#teamDescription h1 {
+    text-align: center;
+    font-size: 40px; 
+    font-size: 40px;
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  
+    font-style: normal;
+
+} 
+
+#stackBox {
+    
+    background-color:lavender; 
+    width: 700px; 
+    height: 400px; 
+    text-align: center;
+    margin-left: 26%;
+    animation: appear 2s; 
+}
+#techList {
+
+    margin-top: 30px;
+    width: 600px;
+    margin-left: 5%;
+}
+
+#tech {
+    padding-top: 30px; 
+}
+
+#tech h2 {
+    font-size: 40px;
+    font-weight: bold; 
+    border-radius: 4%;
+    font-family: "Pixelify Sans", sans-serif;
+    color: purple;
+}
+
+#tech p {
+    font-size: 20px;
+}
+
+#teamDescription p {
+    font-size: 20px;
+    color: black; 
+    font-family: "Pixelify Sans", sans-serif;
+    font-weight: 40px;
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0%);
+    }
+}
+@keyframes appear {
+    from {
+        opacity: 0; 
+        scale: 0.5; 
+    }
+    to {
+        opacity: 1; 
+        scale:1; 
+
+    }
+}
+    .block {
+        animation: appear 5s linear; 
+        animation-timeline: view(); 
+        animation-range: entry 0% cover
+        40%;
+    }
+
+    #first, #third, #fifth {
+        animation: fadeLeft 2s forwards;
+    }
+    
+    #second, #forth {
+        animation: fadeRight 2s forwards;
+    }
+    

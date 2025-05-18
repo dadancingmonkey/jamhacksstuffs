@@ -1,0 +1,145 @@
+
+.mainMenu {
+    position: relative;  
+    width: 25%;
+    text-align: center;
+}
+
+.secondaryMenu {
+    padding: 10px;
+    white-space: nowrap;
+}
+
+.mainMenu:hover .secondaryContainer {
+    display: block;
+}
+#menuBar a:visited {
+    color: #f85acb; 
+}
+.secondaryContainer {
+    display: none;
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: #ffffff;
+    width: 100%; 
+    z-index: 1000;
+}
+#background {
+    height: 1000px; 
+    display: absolute;
+}
+
+#menuBar {
+    display: flex; 
+    width: 80%; 
+    justify-content: center;
+    align-items: center;
+    background-color: #814141; 
+    color: rgb(255, 146, 230); 
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    font-size: 20px;
+    font-weight: bold; 
+    border-radius: 4%;
+    font-family: "Pixelify Sans", sans-serif;
+
+    position: fixed;
+    top: 0;          
+    left: 50%;       
+    transform: translateX(-50%);
+    z-index: 999;     
+    padding: 10px 0;  
+    
+}
+
+#background1 {
+    height: 930px;
+    position: relative;
+    padding-top: 70px; 
+
+}
+
+#largeGroup img{
+    Width: 100%; 
+    height: 800px; 
+    position:absolute; 
+}
+
+#title {
+    position: absolute;
+    margin-top: 60px; 
+    margin-left: 39%;
+    font-size:20px; 
+    animation: fadeDown 2s; 
+
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;  
+    font-style: normal;
+}
+
+.totalPlans {
+    background-color: white; 
+    width: 21%; 
+    height: 500px; 
+    position: absolute; 
+    margin-top: 200px; 
+    animation: appear 2s; 
+}
+
+#first {
+    margin-left: 8%; 
+
+}
+
+#second {
+    margin-left: 38.7%; 
+}
+
+#third {
+    margin-left: 70%; 
+}
+
+@keyframes appear {
+    from {
+        opacity: 0; 
+        scale: 0.5; 
+    }
+    to {
+        opacity: 1; 
+        scale:1; 
+
+    }
+}
+    .block {
+        animation: appear 5s linear; 
+        animation-timeline: view(); 
+        animation-range: entry 0% cover
+        40%;
+    }
+
+    @keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+.totalPlans h5 {
+    text-align: center; 
+    font-family: 'Pixelify Sans', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700; 
+    font-style: normal;
+    font-size: 20px; 
+}
+.totalPlans ul li {
+    padding: 5px;
+    letter-spacing: 3px;
+
+}
