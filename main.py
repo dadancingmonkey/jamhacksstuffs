@@ -7,6 +7,7 @@ import menus
 from pomodoro import PomodoroScreen 
 from mainmenu import TitleScreen, HelpScreen
 from breathing import BreathingScreen
+import map
 
 
 
@@ -29,16 +30,18 @@ class Game:
         self.pomodoro_screen = None
         self.breathing_screen = None
 
+        self.land_menu = map.LandPurchaseMenu(self.screen.get_size())
 
-        self.title_screen = TitleScreen("images\main_title_bg.png", (800, 600))
+        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (800, 600))
         self.help_screen = HelpScreen((800, 600))
-
         self.state = self.STATE_MENU
-
+        self.map_icon = map.MapIcon(self.screen.get_size(), "map icon.png")
 
         self.init_buttons()
-        self.entities()
+        self.entities()  # <-- Must come before reload_tilemap()
 
+        config.tilemap = map.update_tilemap_with_owned_land(self.land_menu.owned_tiles, config.tilemap)
+        self.reload_tilemap()  # <-- Now safe to call here!
 
     def give_journaling_reward(self, coins):
         self.money += coins
@@ -416,8 +419,21 @@ class Game:
 
         if self.shop_open:
             self.shop_menu.draw(self.screen)
-
-        pygame.display.flip()
+    
+    def reload_tilemap(self):
+        # Remove all current ground, trees, walls
+        self.ground.empty()
+        self.trees.empty()
+        self.walls.empty()
+        self.all_sprites.empty()
+        self.player = None
+        self.create_tilemap()
+        # Re-add player if needed
+        if self.player:
+            self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
+        else:
+            self.player = gamesprites.Player((0, 0))
+            self.all_sprites.add(self.player, layer=config.PLAYER_LAYER)
 
     def gameloop(self):
         self.selected_seed_type = "green"
@@ -542,6 +558,20 @@ class Game:
                             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                                 self.shop_menu.clicked_index = None
 
+                if self.state == self.STATE_PLAY:
+                    self.map_icon.handle_event(event)
+                    
+                    result = self.land_menu.handle_event(event)
+                    if result:
+                        if result and result[0] == "done":
+                            config.tilemap = map.update_tilemap_with_owned_land(self.land_menu.owned_tiles, config.tilemap)
+                            self.reload_tilemap()
+
+
+
+                
+            
+            # -------- DRAW LOGIC ---------
             if self.state == self.STATE_MENU:
                 self.title_screen.draw(self.screen)
             elif self.state == self.STATE_HELP:
@@ -559,9 +589,18 @@ class Game:
             elif self.state == self.STATE_PLAY:
                 keys = pygame.key.get_pressed()
                 self.player.update(dt, keys, self.walls)
+                self.refresh()
+                self.map_icon.draw(self.screen)
+                self.land_menu.draw(self.screen)  # Only once, outside refresh()
                 for tree in self.trees:
                     tree.update(dt)
                 self.refresh()
+
+            # Only check was_clicked ONCE
+            if self.state == self.STATE_PLAY and self.map_icon.was_clicked():
+                self.land_menu.open()
+
+
             pygame.display.flip()
         pygame.quit()
         sys.exit()
