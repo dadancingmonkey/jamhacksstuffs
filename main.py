@@ -18,15 +18,15 @@ class Game:
     STATE_POMODORO = 3
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1280, 720))
+        self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Mindful")
         self.clock = pygame.time.Clock()
         self.running = True
         self.pomodoro_screen = None
         self.land_menu = map.LandPurchaseMenu(self.screen.get_size())
 
-        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (1280, 720))
-        self.help_screen = HelpScreen((1280, 720))
+        self.title_screen = TitleScreen("ChatGPT Image May 17, 2025, 01_28_47 PM.png", (800, 600))
+        self.help_screen = HelpScreen((800, 600))
         self.state = self.STATE_MENU
         self.map_icon = map.MapIcon(self.screen.get_size(), "map icon.png")
 
