@@ -60,7 +60,10 @@ class MapIcon:
     ICON_SIZE = (80, 80)
     MARGIN = 10
 
-    def __init__(self, screen_size, icon_path="map icon.png"):
+    def __init__(self, screen_size, icon_path="images/map icon.png"):
+
+
+    
         self.image_raw = pygame.image.load(icon_path).convert_alpha()
         self.image = pygame.transform.smoothscale(self.image_raw, self.ICON_SIZE)
         self.rect = self.image.get_rect()

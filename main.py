@@ -35,7 +35,9 @@ class Game:
         self.title_screen = TitleScreen("images/main_title_bg.png", (800, 600))
         self.help_screen = HelpScreen((800, 600))
         self.state = self.STATE_MENU
-        self.map_icon = map.MapIcon(self.screen.get_size(), "map icon.png")
+        self.map_icon = map.MapIcon(self.screen.get_size(), "images/map icon.png")
+        print("Screen size for MapIcon:", self.screen.get_size())
+        print("MapIcon rect:", self.map_icon.rect)
 
         self.init_buttons()
         self.entities()  # <-- Must come before reload_tilemap()
@@ -558,7 +560,7 @@ class Game:
                             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                                 self.shop_menu.clicked_index = None
 
-                if self.state == self.STATE_PLAY:
+                
                     self.map_icon.handle_event(event)
                     
                     result = self.land_menu.handle_event(event)
@@ -594,7 +596,7 @@ class Game:
                 self.land_menu.draw(self.screen)  # Only once, outside refresh()
                 for tree in self.trees:
                     tree.update(dt)
-                self.refresh()
+                
 
             # Only check was_clicked ONCE
             if self.state == self.STATE_PLAY and self.map_icon.was_clicked():
