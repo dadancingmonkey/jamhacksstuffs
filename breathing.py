@@ -12,7 +12,7 @@ class BreathingScreen:
 
         pygame.init()
         pygame.mixer.init()
-        pygame.mixer.music.load(r"images\breathing.mp3")
+        pygame.mixer.music.load(r"images/breathing.mp3")
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
 

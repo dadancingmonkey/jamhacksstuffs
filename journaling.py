@@ -6,7 +6,7 @@ class JournalingScreen:
         self.on_exit = on_exit
         pygame.init()
         pygame.mixer.init()
-        pygame.mixer.music.load("images\journal.mp3")
+        pygame.mixer.music.load("images/journal.mp3")
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
         self.clock = pygame.time.Clock()
