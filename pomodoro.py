@@ -8,6 +8,14 @@ class PomodoroScreen:
         self.screen = screen
         self.give_reward_callback = give_reward_callback
 
+        pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.load("images\study.mp3")
+        pygame.mixer.music.set_volume(0.5) 
+        pygame.mixer.music.play(-1)
+
+        self.change_sound = pygame.mixer.Sound("images/change.mp3")   
+
         self.WIDTH, self.HEIGHT = screen.get_size()
         self.bg = pygame.image.load("images/timer_run.png").convert()
         bg_height = self.bg.get_height()
@@ -29,6 +37,8 @@ class PomodoroScreen:
         self.time_left = self.WORK_DURATION
         self.last_tick = time.time()
         self.purple = pygame.Color("#C3B1E1")
+
+        self.previous_state = "paused"
 
         # Sprites
         self.working_sprites = [
@@ -100,6 +110,7 @@ class PomodoroScreen:
                 self.is_break = False
                 self.time_left = self.WORK_DURATION
             elif event.key == pygame.K_ESCAPE:
+                pygame.mixer.music.set_volume(0)
                 return "exit"
 
     def update(self):
@@ -114,6 +125,7 @@ class PomodoroScreen:
             delta = now - self.last_tick
             self.last_tick = now
             self.time_left -= delta
+            current_state = "break" if self.is_break else "work"
             if self.time_left <= 0:
                 if self.is_break:
                     # Finished break, go back to work session
@@ -126,6 +138,12 @@ class PomodoroScreen:
                     self.is_break = True
                     self.time_left = self.BREAK_DURATION
                     self.last_tick = time.time()
+        else:
+            current_state = "paused"
+
+        if current_state != self.previous_state:
+            self.change_sound.play()
+            self.previous_state = current_state
         # Animate sprite
         active_sprites = self.working_sprites if self.is_running and not self.is_break else self.break_sprites
         if self.is_running and now - self.last_sprite_change > self.sprite_change_interval:

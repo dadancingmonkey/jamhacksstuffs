@@ -4,6 +4,11 @@ class JournalingScreen:
     def __init__(self, screen, on_exit=None):
         self.screen = screen
         self.on_exit = on_exit
+        pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.load("images\journal.mp3")
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
         self.clock = pygame.time.Clock()
         self.base_font = pygame.font.Font(None, 32)
         self.input_rect = pygame.Rect(50, 50, 700, 500)
@@ -50,6 +55,7 @@ class JournalingScreen:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.running = False  # Allow exit with ESC
+                pygame.mixer.music.set_volume(0)
             elif event.key == pygame.K_BACKSPACE:
                 self.user_text = self.user_text[:-1]
                 self.holding_backspace = True

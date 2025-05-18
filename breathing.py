@@ -10,6 +10,12 @@ class BreathingScreen:
         self.WIDTH, self.HEIGHT = screen.get_size()
         self.font = pygame.font.SysFont('helvetica', 40)
 
+        pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.load(r"images\breathing.mp3")
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
+
         self.current_frame = 0
         self.new = 0
         self.radius = 150
@@ -25,8 +31,10 @@ class BreathingScreen:
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            pygame.mixer.music.set_volume(0)
             return "exit"
         if event.type == pygame.QUIT:
+            pygame.mixer.music.set_volume(0)
             return "exit"
         return None
 
