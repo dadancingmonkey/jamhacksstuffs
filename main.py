@@ -18,6 +18,8 @@ class Game:
     STATE_PLAY = 2
     STATE_POMODORO = 3
     STATE_BREATHING = 4
+    STATE_JOURNALING = 5
+
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600)) 
@@ -38,7 +40,9 @@ class Game:
         self.entities()
 
 
-        
+    def give_journaling_reward(self, coins):
+        self.money += coins
+        print("Journaling complete!",coins, "coins.")
 
     def init_buttons(self):
         screen_width = self.screen.get_width()
@@ -173,7 +177,17 @@ class Game:
                 elif tile == 'O':
                     block = gamesprites.Block((world_x, world_y),'light2')
                     self.ground.add(block)
-                    self.all_sprites.add(block, layer=config.BLOCKS_LAYER)                  
+                    self.all_sprites.add(block, layer=config.BLOCKS_LAYER) 
+                elif tile == 'W':
+                    water = gamesprites.Water((world_x, world_y), 'dark3')
+                    self.ground.add(water)
+                    self.all_sprites.add(water, layer=config.BLOCKS_LAYER)
+                    self.walls.add(water)
+                elif tile == 'X':
+                    water = gamesprites.Water((world_x, world_y), 'dark4')
+                    self.ground.add(water)
+                    self.all_sprites.add(water, layer=config.BLOCKS_LAYER)
+                    self.walls.add(water)
                 elif tile == '#':
                     tree = gamesprites.Tree((world_x, world_y))
                     self.trees.add(tree)
@@ -232,7 +246,7 @@ class Game:
             tile_pos = self.get_forward_pos(self.player)
             new_flower = gamesprites.PlantedTree(
                 (tile_pos.x, tile_pos.y),
-                growing_time=15,
+                growing_time=5,
                 growth_img_path="images/lavender_growth.png",
                 grown_img_path="images/lavender.png",
                 type = "flower"
@@ -255,7 +269,7 @@ class Game:
             tile_pos = self.get_forward_pos(self.player)
             new_flower = gamesprites.PlantedTree(
                 (tile_pos.x, tile_pos.y),
-                growing_time=20,
+                growing_time=5,
                 growth_img_path="images/tulip_growth.png",
                 grown_img_path="images/tulip.png",
                 type = "flower"
@@ -278,7 +292,7 @@ class Game:
             tile_pos = self.get_forward_pos(self.player)
             new_tree = gamesprites.PlantedTree(
                 (tile_pos.x, tile_pos.y),
-                growing_time=30,
+                growing_time=5,
                 growth_img_path="images/growth_tree_pink.png",
                 grown_img_path="images/tree_pink.png",
             )
@@ -406,17 +420,15 @@ class Game:
         pygame.display.flip()
 
     def gameloop(self):
-        self.selected_seed_type = "green"  # Default to green seeds
-
+        self.selected_seed_type = "green"
+        self.journaling_screen = None
         while self.running:
             dt = self.clock.tick(60) / 1000
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                     break
 
-                # ----- MENU STATES -----
                 if self.state == self.STATE_MENU:
                     btn = self.title_screen.handle_event(event)
                     if btn == 0:
@@ -445,18 +457,13 @@ class Game:
                             self.state = self.STATE_PLAY
                             self.breathing_screen = None
 
-                # Game
-                elif self.state == self.STATE_PLAY:
-                    # 1. --------- QUEST ICON CLICK HANDLER (NEW SECTION) ------------
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1 and self.menu_icon.is_clicked(event.pos):
-                            self.menu_open = True
+                elif self.state == self.STATE_JOURNALING:
+                    pass
 
-                    # 2. ---------- QUEST MENU -----------
+                elif self.state == self.STATE_PLAY:
                     if self.menu_open:
                         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             self.menu_open = False
-
                         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             if self.menu_close_icon.is_clicked(event.pos):
                                 self.menu_open = False
@@ -469,9 +476,11 @@ class Game:
                                         elif idx == 1:
                                             self.breathing_screen = BreathingScreen(self.screen, self.give_breathing_reward)
                                             self.state = self.STATE_BREATHING
+                                        elif idx == 2:
+                                            from journaling import JournalingScreen
+                                            self.journaling_screen = JournalingScreen(self.screen, self.give_journaling_reward)
+                                            self.state = self.STATE_JOURNALING
                                         break
-
-                    # 3. ---------- MAIN GAME CONTROLS -----------
                     else:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_1:
@@ -494,11 +503,13 @@ class Game:
                             elif event.key == pygame.K_q:
                                 self.menu_open = True
 
-                        # ---- SHOP HANDLING ----
                         if event.type == pygame.MOUSEBUTTONDOWN:
-                            if event.button == 1 and self.button.is_clicked(event.pos):
-                                if not self.shop_open:
-                                    self.shop_open = True
+                            if event.button == 1:
+                                if self.button.is_clicked(event.pos):
+                                    if not self.shop_open:
+                                        self.shop_open = True
+                                elif self.menu_icon.is_clicked(event.pos):
+                                    self.menu_open = True
 
                         if self.shop_open:
                             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -508,21 +519,22 @@ class Game:
                                 idx = self.shop_menu.item_at_pos(event.pos)
                                 if idx is not None:
                                     if self.money > 0:
-                                        self.money -= 1
                                         if idx == 0:
-                                            self.tulip_seeds += 1
-                                            print("Bought 1 seed! -1 coin")
+                                            if self.money >= 5:
+                                                self.money -= 5
+                                                self.tulip_seeds += 1
                                         elif idx == 1:
-                                            self.lavender_seeds += 1
-                                            print("Bought 1 lavender seed! -1 coin")
+                                            if self.money >= 5:
+                                                self.money -= 5
+                                                self.lavender_seeds += 1
                                         elif idx == 2:
-                                            self.green_seeds += 1
-                                            print("Bought 1 green tree seed! -1 coin")
+                                            if self.money >= 10:
+                                                self.money -= 10
+                                                self.green_seeds += 1
                                         elif idx == 3:
-                                            self.pink_seeds += 1
-                                            print("Bought 1 pink tree seed! -1 coin")
-                                    else:
-                                        print("Not enough coins!")
+                                            if self.money >= 10:
+                                                self.money -= 10
+                                                self.pink_seeds += 1
                                     self.shop_menu.clicked_index = idx
 
                             if event.type == pygame.MOUSEMOTION:
@@ -530,7 +542,6 @@ class Game:
                             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                                 self.shop_menu.clicked_index = None
 
-            # ----- DRAWING -----
             if self.state == self.STATE_MENU:
                 self.title_screen.draw(self.screen)
             elif self.state == self.STATE_HELP:
@@ -541,17 +552,21 @@ class Game:
             elif self.state == self.STATE_BREATHING and self.breathing_screen:
                 self.breathing_screen.update()
                 self.breathing_screen.draw()
+            elif self.state == self.STATE_JOURNALING and self.journaling_screen:
+                self.journaling_screen.run()
+                self.journaling_screen = None
+                self.state = self.STATE_PLAY
             elif self.state == self.STATE_PLAY:
                 keys = pygame.key.get_pressed()
                 self.player.update(dt, keys, self.walls)
                 for tree in self.trees:
                     tree.update(dt)
                 self.refresh()
-
             pygame.display.flip()
-
         pygame.quit()
         sys.exit()
+
+
 
 
 

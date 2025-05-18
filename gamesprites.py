@@ -128,7 +128,7 @@ class Block(pygame.sprite.Sprite):
             elif type == "light2":
                 image = pygame.image.load("images/grass_light_2.png").convert_alpha()
             else:
-                image = pygame.Surface((config.TILESIZE, config.TILESIZE))  # Fallback (blank)
+                image = pygame.Surface((config.TILESIZE, config.TILESIZE))
             image = pygame.transform.scale(image, (config.TILESIZE, config.TILESIZE))
             Block.image_surfaces[type] = image
 
@@ -145,6 +145,31 @@ class Block(pygame.sprite.Sprite):
         return self.image.get_rect(topleft=(screen_x, screen_y))
 
 
+class Water(pygame.sprite.Sprite):
+    image_surface = None
+
+    def __init__(self, world_pos, type):
+        super().__init__()
+        if type not in Block.image_surfaces:
+            if type == "dark3":
+                image = pygame.image.load("images/water.png").convert_alpha()
+            elif type == "dark4":
+                image = pygame.image.load("images/water1.png").convert_alpha()
+            image = pygame.transform.scale(image, (config.TILESIZE, config.TILESIZE))
+            Block.image_surfaces[type] = image
+
+        self.image = Block.image_surfaces[type]
+        self.rect = self.image.get_rect()
+        self.world_pos = pygame.Vector2(world_pos)
+        self.collision_rect = self.image.get_rect(topleft=self.world_pos)
+
+    def update(self, dt):
+        pass
+
+    def get_draw_pos(self, player_world_pos, screen_rect):
+        screen_x = self.world_pos.x - player_world_pos.x + screen_rect.centerx
+        screen_y = self.world_pos.y - player_world_pos.y + screen_rect.centery
+        return self.image.get_rect(topleft=(screen_x, screen_y))
 
 class Wall(pygame.sprite.Sprite):
     image_surface = None
@@ -380,4 +405,5 @@ class QuestButton(pygame.sprite.Sprite):
         rel_x = mouse_pos[0] - self.rect.centerx
         rel_y = mouse_pos[1] - self.rect.centery
         return rel_x ** 2 + rel_y ** 2 <= self.radius ** 2
+
 

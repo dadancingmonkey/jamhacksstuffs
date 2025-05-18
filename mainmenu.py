@@ -72,7 +72,6 @@ class TitleScreen:
         self.screen_w, self.screen_h = screen_size
         self.bg = pygame.image.load(bg_image_path).convert()
         self.bg = pygame.transform.scale(self.bg, (self.screen_w, self.screen_h))
-        # Buttons: [help, start, close]
         btn_y = self.screen_h//2 + 170
         self.buttons = [
             TitleButton("?", (self.screen_w//2 - 270, btn_y), width=90, height=90),
